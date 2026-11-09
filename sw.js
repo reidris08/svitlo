@@ -1,6 +1,6 @@
 // Офлайн-режим: оболонка застосунку з кешу, дані — спершу з мережі.
-const CACHE = "svitlo-v7";
-const SHELL = ["./", "index.html", "manifest.webmanifest", "icon-180.png", "icon-512.png", "search.js"];
+const CACHE = "svitlo-v8";
+const SHELL = ["./", "index.html", "manifest.webmanifest", "icon-180.png", "icon-512.png", "search.js", "poe.js"];
 
 self.addEventListener("install", (e) => {
   e.waitUntil(caches.open(CACHE).then((c) => c.addAll(SHELL)).then(() => self.skipWaiting()));

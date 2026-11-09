@@ -50,6 +50,47 @@ async function getJSON(name) {
   }
 }
 
+// ---------- графік напряму з сайту обленерго ----------
+const MONTHS = { "січня": 1, "лютого": 2, "березня": 3, "квітня": 4, "травня": 5, "червня": 6,
+  "липня": 7, "серпня": 8, "вересня": 9, "жовтня": 10, "листопада": 11, "грудня": 12 };
+const pad2 = (n) => String(n).padStart(2, "0");
+function parsePoe(html) {
+  const days = [];
+  for (const chunk of String(html || "").split(/class="gpvinfodetail"/).slice(1)) {
+    const text = chunk.replace(/<style[\s\S]*?<\/style>/g, " ").replace(/<[^>]+>/g, " ");
+    const m = text.match(/(\d{1,2})\s+(січня|лютого|березня|квітня|травня|червня|липня|серпня|вересня|жовтня|листопада|грудня)\s+(\d{4})/);
+    if (!m) continue;
+    const date = `${m[3]}-${pad2(MONTHS[m[2]])}-${pad2(m[1])}`;
+    const ti = chunk.search(/<table[^>]*class="[^"]*\bgpv-table\b/);
+    if (ti < 0) continue;
+    const table = chunk.slice(ti, chunk.indexOf("</table>", ti));
+    const slots = {};
+    for (const tr of table.split(/<tr\b/).slice(1)) {
+      const q = (tr.match(/class="[^"]*\bgpv-q\b[^"]*"[^>]*>\s*([1-6]\.[12])\s*</) || [])[1];
+      if (!q) continue;
+      const cells = [...tr.matchAll(/class="gpv-c\b[^"]*\bgpv-s(\d)/g)].map((x) => x[1]);
+      if (cells.length !== 48) continue;
+      slots[q] = cells.map((c) => (c === "2" ? "0" : c === "3" ? "?" : "1")).join("");
+    }
+    if (Object.keys(slots).length >= 6 && !days.some((d) => d.date === date)) days.push({ date, status: "scheduled", slots });
+  }
+  return days.sort((a, b) => a.date.localeCompare(b.date));
+}
+async function getLiveSchedule() {
+  try {
+    const f = new DateFormatter(); f.dateFormat = "dd-MM-yyyy";
+    const r = new Request("https://www.poe.pl.ua/customs/newgpv-info.php");
+    r.method = "POST"; r.timeoutInterval = 15;
+    r.headers = { "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8" };
+    r.body = "seldate=" + encodeURIComponent(JSON.stringify({ date_in: f.string(new Date()) }));
+    const days = parsePoe(await r.loadString());
+    if (!days.length) return null;
+    const sched = { checkedAt: new Date().toISOString(), source: "poe.pl.ua", days };
+    fm.writeString(cachePath("schedule.json"), JSON.stringify(sched));
+    return sched;
+  } catch (e) { return null; }
+}
+
 // ---------- розрахунок ----------
 const slotStart = (date, i) => { const [y, m, d] = date.split("-").map(Number); return new Date(y, m - 1, d, 0, 30 * i); };
 function segments(schedule, queue) {
@@ -105,7 +146,8 @@ async function build() {
     return w;
   }
 
-  const [schedule, status] = await Promise.all([getJSON("schedule.json"), getJSON("status.json")]);
+  const [live, status] = await Promise.all([getLiveSchedule(), getJSON("status.json")]);
+  const schedule = live || (await getJSON("schedule.json"));
   const em = status && status.emergency && status.emergency.active ? status.emergency : null;
   const now = new Date();
   const segs = segments(schedule, queue);

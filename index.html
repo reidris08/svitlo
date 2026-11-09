@@ -290,7 +290,8 @@
   </form>
 </dialog>
 
-<script src="search.js?v=7"></script>
+<script src="poe.js?v=8"></script>
+<script src="search.js?v=8"></script>
 <script>
 "use strict";
 const QUEUES = ["1.1","1.2","2.1","2.2","3.1","3.2","4.1","4.2","5.1","5.2","6.1","6.2"];
@@ -317,8 +318,11 @@ async function fetchJSON(url) {
 }
 async function refresh() {
   $("refreshBtn").classList.add("spin");
-  const [s, st] = await Promise.allSettled([fetchJSON("data/schedule.json"), fetchJSON("data/status.json")]);
-  if (s.status === "fulfilled") schedule = s.value;
+  // графік — напряму з сайту обленерго (свіжий, одразу з «завтра»);
+  // якщо сайт недоступний — копія, яку збирає GitHub
+  const [live, s, st] = await Promise.allSettled([POE.fetchDays(), fetchJSON("data/schedule.json"), fetchJSON("data/status.json")]);
+  if (live.status === "fulfilled" && live.value.length) schedule = { checkedAt: new Date().toISOString(), source: "poe.pl.ua", days: live.value };
+  else if (s.status === "fulfilled") schedule = s.value;
   if (st.status === "fulfilled") status = st.value;
   save(LS.cache, { schedule, status });
   setTimeout(() => $("refreshBtn").classList.remove("spin"), 300);
