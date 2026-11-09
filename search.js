@@ -5,7 +5,7 @@
 (function (root) {
   "use strict";
   const L = "а-яіїєґa-z'";
-  const SETTLE = /(?:^|[^а-яіїєґa-z'])(?:м|с|смт|сщ|село|селище|місто|мисто)\.?\s*([а-яіїєґ'][а-яіїєґ'-]{2,})/g;
+  const SETTLE = /(?:^|[^а-яіїєґa-z'])(?:м|с|смт|сщ|село|селище|місто|мисто)(?:\.\s*|\s+)([а-яіїєґ'][а-яіїєґ'-]{2,})/g;
   const N = (s) => s.toLowerCase().replace(/[’`ʼ]/g, "'").replace(/ё/g, "е").replace(/і/g, "и").replace(/є/g, "е");
   const esc = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
   const STOP = new Set(("м місто с село смт селище сщ вул вулиця пров провулок просп проспект бульв бульвар пл площа " +
@@ -35,7 +35,8 @@
       else street = ws;
     }
     if (!street.length && place.length) { street = place; place = []; } // лише населений пункт («с. Деревки»)
-    return { house, place: place.length ? stem(place[place.length - 1]) : null, street };
+    const lane = all.some((w) => /^(пров|провулок|туп|тупик|узвіз)$/.test(w));
+    return { house, place: place.length ? stem(place[place.length - 1]) : null, street, lane };
   }
 
   // номери будинків, перелічені одразу після назви вулиці
@@ -108,6 +109,9 @@
         else if (!q.house) { score = 1.6; kind = "street"; }               // будинок не вказали
         else { score = houseScore(list, q.house); kind = "house"; }
         if (!score) continue;
+        // «пров. Героїв Маріуполя» — це провулок, а не вулиця з тією ж назвою
+        const lane = /(?:пров|провулок|туп|тупик|узвиз)\S*\s*(?:[а-яіїєґ'.]+\s+){0,2}$/.test(n.slice(Math.max(0, idx - 32), idx));
+        if (lane !== q.lane) score -= 1.8;
         // інші слова назви («Героїв АТО», «Павла Скоропадського») мають стояти поруч
         if (extra.length) {
           const near = n.slice(Math.max(0, idx - 25), idx + key.length + 25);
@@ -140,7 +144,7 @@
     if (!results.length || results[0].approx) return null;
     const top = results[0];
     const other = results.find((r) => r.q !== top.q);
-    return top.score >= 2 && (!other || top.score - other.score >= 0.5) ? top.q : null;
+    return top.score >= 3 && (!other || top.score - other.score >= 0.5) ? top.q : null;
   }
 
   function snippet(r, before = 70, after = 150) {

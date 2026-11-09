@@ -460,7 +460,7 @@ function render() {
 }
 
 /* ---------- діалог адреси з автопошуком черги ---------- */
-let editing = null, selQueue = null, lastResults = [];
+let editing = null, selQueue = null, lastResults = [], manualPick = false;
 $("qgrid").innerHTML = QUEUES.map((q) => `<button type="button" data-q="${q}">${q}</button>`).join("");
 function choose(q, note) {
   selQueue = q;
@@ -470,7 +470,7 @@ function choose(q, note) {
   $("foundNote").textContent = note || "";
   $("saveBtn").disabled = !q;
 }
-$("qgrid").onclick = (e) => { const q = e.target.dataset?.q; if (q) { choose(q, "обрано вручну"); markResults(); } };
+$("qgrid").onclick = (e) => { const q = e.target.dataset?.q; if (q) { manualPick = true; choose(q, "обрано вручну"); markResults(); } };
 
 function markResults() { [...$("results").children].forEach((li) => li.classList.toggle("sel", li.dataset.q === selQueue)); }
 async function runSearch() {
@@ -480,13 +480,17 @@ async function runSearch() {
   const { query, results } = AddrSearch.search(data.rows, text, 8);
   lastResults = results;
   const auto = AddrSearch.decide(results);
+  // автоматичний вибір оновлюється з кожною зміною адреси; вибір, зроблений вручну, не чіпаємо
+  if (!manualPick) choose(auto, auto ? (results[0].kind === "house" ? `будинок ${query.house} є у переліку` : "вулиця у переліку повністю") : "");
+  const NOTE = " Перелік обленерго неповний — якщо знаєте свою чергу, оберіть її вручну.";
   if (!results.length) {
-    $("addrHint").textContent = data.rows.length ? "Не знайдено. Спробуйте лише назву вулиці або населеного пункту" : "Список адрес ще не завантажено — оберіть чергу вручну";
+    $("addrHint").textContent = data.rows.length ? "Цієї адреси немає в переліку обленерго." + NOTE : "Перелік адрес ще не завантажено — оберіть чергу вручну";
+    $("manual").open = true;
   } else if (auto) {
-    $("addrHint").textContent = "Знайдено в графіку обленерго";
-    choose(auto, results[0].kind === "house" ? `будинок ${query.house} є у списку` : "вулиця у списку повністю");
+    $("addrHint").textContent = "Знайдено в переліку обленерго. Якщо черга інша — оберіть вручну нижче.";
   } else {
-    $("addrHint").textContent = results[0].approx ? `Будинку ${query.house} немає у списку — оберіть найближчий варіант` : "Адреса є в кількох місцях — оберіть свій варіант";
+    $("addrHint").textContent = (results[0].approx || results[0].score < 3 ? `Будинку ${query.house || ""} немає в переліку — схожі записи нижче.` : "Адреса є в кількох місцях — оберіть свій варіант.") + NOTE;
+    $("manual").open = true;
   }
   // показуємо до 5 найкращих збігів з фрагментом тексту з PDF
   const seen = new Set();
@@ -494,17 +498,17 @@ async function runSearch() {
   $("results").innerHTML = results.filter((r) => r.score >= minScore).filter((r) => { const k = r.q + r.t.slice(r.at - 20, r.at + 40); if (seen.has(k)) return false; seen.add(k); return true; })
     .slice(0, 5).map((r) => {
       const s = AddrSearch.snippet(r, 50, 110);
-      const tag = r.kind === "house" ? `<span class="tag">будинок у списку</span>` : r.kind === "whole" ? `<span class="tag">уся вулиця</span>` : `<span class="tag w">вулиця, номер не вказано</span>`;
+      const tag = r.score < 3 ? `<span class="tag w">схожий запис — перевірте</span>` : r.kind === "house" ? `<span class="tag">будинок у списку</span>` : r.kind === "whole" ? `<span class="tag">уся вулиця</span>` : `<span class="tag w">вулиця, номер не вказано</span>`;
       return `<li data-q="${r.q}"><span class="qb">${r.q}<small>черга</small></span><span class="sn">${tag}<br>${esc(s.pre)}<mark>${esc(s.hit)}</mark>${esc(s.post)}</span></li>`;
     }).join("");
   markResults();
 }
 let searchTimer;
-$("addrInput").oninput = () => { clearTimeout(searchTimer); searchTimer = setTimeout(runSearch, 250); };
-$("results").onclick = (e) => { const li = e.target.closest("li"); if (li) { choose(li.dataset.q, "обрано зі списку"); markResults(); } };
+$("addrInput").oninput = () => { if (!editing) manualPick = false; clearTimeout(searchTimer); searchTimer = setTimeout(runSearch, 250); };
+$("results").onclick = (e) => { const li = e.target.closest("li"); if (li) { manualPick = true; choose(li.dataset.q, "обрано зі списку"); markResults(); } };
 
 function openDialog(place) {
-  editing = place;
+  editing = place; manualPick = !!place;
   $("dlgTitle").textContent = place ? "Змінити адресу" : "Ваша адреса";
   $("addrInput").value = place?.address || "";
   $("results").innerHTML = ""; $("addrHint").textContent = "Формат: місто, вулиця, будинок";
@@ -513,7 +517,7 @@ function openDialog(place) {
   $("deleteBtn").style.display = place ? "" : "none";
   $("dlg").showModal();
   loadAddresses();
-  if (place?.address) runSearch().then(() => choose(place.queue, "збережена черга")).then(markResults);
+  if (place?.address) runSearch().then(markResults);
 }
 $("form").addEventListener("submit", (e) => {
   if (e.submitter?.value !== "save" || !selQueue) return;
