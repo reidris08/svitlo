@@ -1,0 +1,55 @@
+name: Оновлення переліку адрес
+
+on:
+  schedule:
+    - cron: "37 4 * * *"      # щодня близько 06:37 за Києвом — перевірити, чи є новий PDF
+  workflow_dispatch:
+  push:
+    paths:
+      - "pdf/**"              # PDF, завантажений вручну в папку pdf/
+
+permissions:
+  contents: write
+
+concurrency:
+  group: update-data
+  cancel-in-progress: false
+
+jobs:
+  addresses:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+      - name: Встановити pdftotext
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq poppler-utils
+
+      - name: Знайти PDF
+        id: pdf
+        run: |
+          if [ "${{ github.event_name }}" = "push" ]; then
+            f=$(git log -1 --name-only --format= -- pdf/ | grep -i '\.pdf$' | head -1)
+          else
+            f=$(python3 scripts/fetch_pdf.py || true)
+          fi
+          echo "file=$f" >> "$GITHUB_OUTPUT"
+          echo "PDF: ${f:-немає нового}"
+
+      - name: Перетворити на перелік адрес
+        if: steps.pdf.outputs.file != ''
+        run: python3 scripts/addresses.py "${{ steps.pdf.outputs.file }}" data/addresses.json
+
+      - name: Зберегти зміни
+        run: |
+          git pull --rebase --autostash -q || true
+          if [ -n "$(git status --porcelain data)" ]; then
+            git config user.name "svitlo-bot"
+            git config user.email "svitlo-bot@users.noreply.github.com"
+            git add data
+            git commit -m "Оновлено перелік адрес"
+            git push
+          else
+            echo "Змін немає"
+          fi
