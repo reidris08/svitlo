@@ -1,5 +1,5 @@
 // Офлайн-режим: оболонка застосунку з кешу, дані — спершу з мережі.
-const CACHE = "svitlo-v4";
+const CACHE = "svitlo-v5";
 const SHELL = ["./", "index.html", "manifest.webmanifest", "icon-180.png", "icon-512.png", "search.js"];
 
 self.addEventListener("install", (e) => {
@@ -13,7 +13,8 @@ self.addEventListener("fetch", (e) => {
   if (url.origin !== location.origin || e.request.method !== "GET") return;
   if (url.pathname.includes("/data/")) return; // дані завжди свіжі; офлайн-копія — у localStorage
   e.respondWith(
-    fetch(e.request).then((r) => {
+    // cache: "no-cache" — щоразу звіряємося з сервером, щоб нова версія застосунку з'являлася одразу
+    fetch(new Request(e.request.url, { cache: "no-cache" })).then((r) => {
       const copy = r.clone(); caches.open(CACHE).then((c) => c.put(e.request, copy));
       return r;
     }).catch(() => caches.match(e.request).then((r) => r || caches.match("index.html")))
