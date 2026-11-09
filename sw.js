@@ -1,5 +1,5 @@
 // Офлайн-режим: оболонка застосунку з кешу, дані — спершу з мережі.
-const CACHE = "svitlo-v6";
+const CACHE = "svitlo-v7";
 const SHELL = ["./", "index.html", "manifest.webmanifest", "icon-180.png", "icon-512.png", "search.js"];
 
 self.addEventListener("install", (e) => {
