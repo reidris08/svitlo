@@ -1,0 +1,547 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Світло</title>
+<meta name="theme-color" content="#F4F1EC" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#17191C" media="(prefers-color-scheme: dark)">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Світло">
+<link rel="apple-touch-icon" href="icon-180.png">
+<link rel="icon" href="icon-512.png">
+<link rel="manifest" href="manifest.webmanifest">
+<style>
+  :root {
+    --bg: #F4F1EC; --card: #FFFFFF; --ink: #2B3035; --muted: #848A90; --line: #ECE7DF; --soft: #F7F4EF;
+    --on: #8FB894; --on-2: #B9D6BC; --on-soft: #E6F0E5; --on-ink: #3D6845;
+    --off: #6A7DA0; --off-2: #9DADC9; --off-soft: #E3E8F1; --off-ink: #3B4A68;
+    --maybe: #D7B676; --maybe-soft: #F6EDDA; --maybe-ink: #84652A;
+    --warn: #C9785B; --warn-soft: #FBEAE2; --warn-ink: #8E4831;
+    --shadow: 0 1px 1px rgba(60,48,36,.04), 0 10px 30px -8px rgba(60,48,36,.12);
+    --r: 26px;
+    --num: ui-rounded, "SF Pro Rounded", -apple-system, system-ui, sans-serif;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #17191C; --card: #22262A; --ink: #EDEAE5; --muted: #979DA4; --line: #30353A; --soft: #1C1F23;
+      --on: #84AE8A; --on-2: #5E7F63; --on-soft: #26332A; --on-ink: #B9DABC;
+      --off: #7D92B8; --off-2: #556786; --off-soft: #272F3D; --off-ink: #C5D0E6;
+      --maybe: #CDAE6C; --maybe-soft: #3A3324; --maybe-ink: #E8D3A0;
+      --warn: #D88E70; --warn-soft: #3D2A23; --warn-ink: #F4C8B5;
+      --shadow: 0 0 0 1px rgba(255,255,255,.03);
+    }
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { margin: 0; background: var(--bg); color: var(--ink); }
+  body {
+    font: 16px/1.4 -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, sans-serif;
+    padding: max(16px, env(safe-area-inset-top)) 16px max(28px, env(safe-area-inset-bottom));
+    max-width: 520px; margin: 0 auto; -webkit-font-smoothing: antialiased;
+  }
+  button { font: inherit; color: inherit; }
+  .muted { color: var(--muted); }
+  @keyframes rise { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+  .card, header, .place-row { animation: rise .45s ease both; }
+  .card:nth-of-type(2) { animation-delay: .06s; }
+
+  /* шапка */
+  header { display: flex; align-items: center; gap: 10px; margin: 6px 2px 10px; }
+  header .who { flex: 1; min-width: 0; }
+  header .eyebrow { font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); font-weight: 600; }
+  header h1 { margin: 2px 0 0; font: 700 30px/1.1 var(--num); letter-spacing: -.01em; }
+  .icon-btn { border: 0; background: var(--card); width: 42px; height: 42px; border-radius: 50%; box-shadow: var(--shadow); display: grid; place-items: center; cursor: pointer; transition: transform .15s; }
+  .icon-btn:active { transform: scale(.94); }
+  .icon-btn svg { width: 19px; height: 19px; stroke: var(--ink); }
+  .icon-btn.spin svg { animation: spin .8s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .place-row { display: flex; gap: 8px; overflow-x: auto; margin: 0 -16px 16px; padding: 2px 16px 4px; scrollbar-width: none; }
+  .place-row::-webkit-scrollbar { display: none; }
+  .chip { display: inline-flex; align-items: center; gap: 6px; border: 0; background: var(--card); box-shadow: var(--shadow); border-radius: 999px; padding: 8px 14px 8px 11px; font-size: 13.5px; white-space: nowrap; cursor: pointer; max-width: 82%; }
+  .chip span { overflow: hidden; text-overflow: ellipsis; }
+  .chip svg { width: 15px; height: 15px; flex: none; stroke: currentColor; opacity: .7; }
+  .chip.active { background: var(--ink); color: var(--bg); }
+  .chip b { font-weight: 650; font-variant-numeric: tabular-nums; opacity: .75; }
+  .chip.add { padding: 8px 14px; color: var(--muted); }
+
+  .card { background: var(--card); border-radius: var(--r); box-shadow: var(--shadow); padding: 22px; margin-bottom: 14px; position: relative; overflow: hidden; }
+
+  /* головна картка — тло м'яко підфарбоване станом */
+  #now { padding-bottom: 20px; }
+  #now::before { content: ""; position: absolute; inset: 0; pointer-events: none; opacity: .9; transition: background .5s; }
+  #now.on::before { background: radial-gradient(120% 90% at 100% 0%, var(--on-soft) 0%, transparent 60%); }
+  #now.off::before { background: radial-gradient(120% 90% at 100% 0%, var(--off-soft) 0%, transparent 60%); }
+  #now.maybe::before { background: radial-gradient(120% 90% at 100% 0%, var(--maybe-soft) 0%, transparent 60%); }
+  #now > * { position: relative; }
+  .state { display: inline-flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 650; padding: 6px 13px 6px 10px; border-radius: 999px; background: var(--soft); }
+  .state i { width: 9px; height: 9px; border-radius: 50%; background: var(--muted); position: relative; }
+  .state i::after { content: ""; position: absolute; inset: -4px; border-radius: 50%; border: 2px solid currentColor; opacity: 0; animation: ping 2.4s ease-out infinite; }
+  @keyframes ping { 0% { transform: scale(.5); opacity: .5; } 80%, 100% { transform: scale(1.4); opacity: 0; } }
+  .state.on { background: var(--on-soft); color: var(--on-ink); } .state.on i { background: var(--on); }
+  .state.off { background: var(--off-soft); color: var(--off-ink); } .state.off i { background: var(--off); }
+  .state.maybe { background: var(--maybe-soft); color: var(--maybe-ink); } .state.maybe i { background: var(--maybe); }
+  .big { font: 700 60px/1 var(--num); letter-spacing: -.03em; margin: 20px 0 6px; font-variant-numeric: tabular-nums; }
+  .big small { font-size: 24px; font-weight: 600; letter-spacing: 0; margin: 0 10px 0 3px; color: var(--muted); }
+  .big.text { font-size: 34px; letter-spacing: -.01em; }
+  .lead { font-size: 15.5px; color: var(--muted); }
+  .lead b { color: var(--ink); font-weight: 650; }
+
+  /* горизонтальна смуга */
+  .barwrap { position: relative; margin-top: 22px; }
+  .bar { position: relative; height: 26px; border-radius: 999px; background: var(--off-soft); overflow: hidden; }
+  .bar.on { background: var(--on-soft); } .bar.maybe { background: var(--maybe-soft); }
+  .bar .fill { position: absolute; inset: 0 auto 0 0; width: 0; border-radius: 999px; transition: width .8s cubic-bezier(.2,.8,.2,1);
+    background: linear-gradient(90deg, var(--off-2), var(--off)); }
+  .bar.on .fill { background: linear-gradient(90deg, var(--on-2), var(--on)); }
+  .bar.maybe .fill { background: var(--maybe); }
+  .bar .fill::after { content: ""; position: absolute; right: 5px; top: 50%; width: 10px; height: 10px; margin-top: -5px; border-radius: 50%; background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,.18); }
+  .bar .pct { position: absolute; right: 12px; top: 0; bottom: 0; display: flex; align-items: center; font: 600 12px var(--num); color: var(--muted); font-variant-numeric: tabular-nums; }
+  .bar-ends { display: flex; justify-content: space-between; font-size: 13px; margin-top: 9px; color: var(--muted); font-variant-numeric: tabular-nums; }
+  .bar-ends b { color: var(--ink); font-weight: 600; }
+
+  /* попередження ГАВ / СГАВ поверх смуги */
+  .alert {
+    position: absolute; left: -6px; right: -6px; top: 0; height: 42px; z-index: 3;
+    display: none; align-items: center; gap: 10px; padding: 0 14px 0 8px;
+    background: color-mix(in srgb, var(--warn-soft) 92%, transparent); color: var(--warn-ink);
+    border: 1px solid color-mix(in srgb, var(--warn) 28%, transparent); border-radius: 15px;
+    -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px);
+    font-size: 13.5px; text-decoration: none; box-shadow: 0 8px 20px -8px rgba(150,70,40,.35);
+  }
+  .alert.show { display: flex; }
+  .alert .txt { flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .alert b { font-weight: 700; }
+  .alert .ic { flex: none; width: 27px; height: 27px; border-radius: 50%; background: var(--warn); color: #fff; display: grid; place-items: center; }
+  .alert .ic svg { width: 15px; height: 15px; }
+  .alert .tm { flex: none; font-size: 12px; opacity: .75; font-variant-numeric: tabular-nums; }
+  .barwrap.alerted { padding-top: 34px; }
+
+  .next { display: flex; align-items: center; gap: 12px; margin-top: 18px; padding-top: 16px; border-top: 1px solid var(--line); font-size: 14px; }
+  .next .dot { flex: none; width: 34px; height: 34px; border-radius: 12px; display: grid; place-items: center; background: var(--soft); }
+  .next .dot svg { width: 17px; height: 17px; stroke: var(--muted); }
+  .next b { font-weight: 650; }
+  .next:empty { display: none; }
+
+  /* графік на день */
+  .dayhead { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; margin-bottom: 14px; }
+  .dayhead h2 { margin: 0; font: 700 19px var(--num); }
+  .dayhead .sub { font-size: 13px; color: var(--muted); }
+  .dayhead .total { font-size: 12.5px; font-weight: 600; padding: 4px 10px; border-radius: 999px; background: var(--off-soft); color: var(--off-ink); white-space: nowrap; }
+  .dayhead .total.zero { background: var(--on-soft); color: var(--on-ink); }
+  .day + .day { margin-top: 24px; padding-top: 22px; border-top: 1px solid var(--line); }
+  .track { position: relative; height: 34px; border-radius: 12px; background: var(--on-soft); overflow: hidden; }
+  .track .seg { position: absolute; top: 0; bottom: 0; }
+  .track .seg.o { background: var(--off); } .track .seg.m { background: var(--maybe); }
+  .track .grid { position: absolute; top: 0; bottom: 0; width: 1px; background: color-mix(in srgb, var(--card) 70%, transparent); }
+  .track .past { position: absolute; top: 0; bottom: 0; left: 0; background: color-mix(in srgb, var(--card) 55%, transparent); }
+  .track .nowline { position: absolute; top: 0; bottom: 0; width: 3px; margin-left: -1.5px; background: var(--ink); border-radius: 3px; }
+  .nowtag { position: absolute; top: -26px; transform: translateX(-50%); font: 600 11px var(--num); background: var(--ink); color: var(--bg); padding: 3px 7px; border-radius: 8px; white-space: nowrap; }
+  .trackwrap { position: relative; }
+  .trackwrap.has-now { margin-top: 30px; }
+  .ticks { position: relative; height: 16px; margin-top: 7px; font-size: 11px; color: var(--muted); font-variant-numeric: tabular-nums; }
+  .ticks span { position: absolute; transform: translateX(-50%); } .ticks span:first-child { transform: none; } .ticks span:last-child { transform: translateX(-100%); }
+  .ints { list-style: none; padding: 0; margin: 14px 0 0; display: flex; flex-wrap: wrap; gap: 7px; }
+  .ints li { display: inline-flex; align-items: center; gap: 7px; font-size: 13.5px; padding: 6px 11px; border-radius: 11px; background: var(--off-soft); color: var(--off-ink); font-variant-numeric: tabular-nums; font-weight: 550; }
+  .ints li::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: var(--off); }
+  .ints li.m { background: var(--maybe-soft); color: var(--maybe-ink); } .ints li.m::before { background: var(--maybe); }
+  .ints li.none { background: var(--on-soft); color: var(--on-ink); } .ints li.none::before { background: var(--on); }
+  .ints li.done { opacity: .45; text-decoration: line-through; text-decoration-thickness: 1px; }
+  .legend { display: flex; gap: 16px; font-size: 12px; color: var(--muted); margin: 4px 6px 0; }
+  .legend span::before { content: ""; display: inline-block; width: 9px; height: 9px; border-radius: 3px; margin-right: 6px; background: var(--on-soft); box-shadow: inset 0 0 0 1px var(--on); }
+  .legend .o::before { background: var(--off); box-shadow: none; } .legend .m::before { background: var(--maybe); box-shadow: none; }
+
+  footer { font-size: 12px; text-align: center; margin-top: 22px; line-height: 1.7; color: var(--muted); }
+  footer a { color: inherit; }
+  .stale { color: var(--warn-ink); font-weight: 600; }
+  .empty { text-align: center; padding: 26px 10px; color: var(--muted); }
+  .empty .em { font-size: 30px; display: block; margin-bottom: 6px; }
+
+  /* налаштування адреси */
+  dialog { border: 0; padding: 0; width: min(520px, 100%); max-height: 94vh; margin: auto auto 0; border-radius: 28px 28px 0 0; background: var(--card); color: var(--ink); }
+  dialog[open] { animation: up .3s cubic-bezier(.2,.8,.2,1); }
+  @keyframes up { from { transform: translateY(40px); opacity: .4; } to { transform: none; opacity: 1; } }
+  @media (min-width: 560px) { dialog { margin: auto; border-radius: 28px; } }
+  dialog::backdrop { background: rgba(25,25,28,.35); -webkit-backdrop-filter: blur(3px); backdrop-filter: blur(3px); }
+  .sheet { padding: 10px 20px max(22px, env(safe-area-inset-bottom)); }
+  .grab { width: 38px; height: 5px; border-radius: 3px; background: var(--line); margin: 0 auto 14px; }
+  .sheet h3 { margin: 0 0 4px; font: 700 23px var(--num); }
+  label.f { display: block; font-size: 12px; letter-spacing: .06em; text-transform: uppercase; font-weight: 650; color: var(--muted); margin: 20px 0 8px; }
+  .inp { position: relative; }
+  .inp svg { position: absolute; left: 14px; top: 15px; width: 18px; height: 18px; stroke: var(--muted); }
+  input[type=text] { width: 100%; border: 1.5px solid var(--line); background: var(--soft); color: var(--ink); border-radius: 16px; padding: 14px 14px 14px 42px; font: inherit; font-size: 16px; outline: none; transition: border-color .2s; }
+  input[type=text]:focus { border-color: var(--off-2); }
+  .hint { font-size: 12.5px; margin-top: 8px; color: var(--muted); }
+  .results { list-style: none; margin: 12px 0 0; padding: 0; display: flex; flex-direction: column; gap: 8px; max-height: 38vh; overflow-y: auto; }
+  .results li { display: flex; gap: 12px; align-items: flex-start; padding: 12px; border-radius: 16px; background: var(--soft); cursor: pointer; border: 1.5px solid transparent; transition: border-color .15s; }
+  .results li.sel { border-color: var(--off); background: var(--off-soft); }
+  .results .qb { flex: none; min-width: 46px; text-align: center; font: 700 17px var(--num); padding: 7px 0; border-radius: 11px; background: var(--card); }
+  .results .qb small { display: block; font-size: 10px; font-weight: 600; color: var(--muted); }
+  .results .sn { font-size: 13px; line-height: 1.4; color: var(--muted); }
+  .results .sn mark { background: var(--maybe-soft); color: var(--ink); border-radius: 4px; padding: 0 1px; margin: 0 -1px; font-weight: 600; }
+  .results .tag { display: inline-block; font-size: 11px; font-weight: 650; padding: 2px 7px; border-radius: 6px; margin-bottom: 4px; background: var(--on-soft); color: var(--on-ink); }
+  .results .tag.w { background: var(--maybe-soft); color: var(--maybe-ink); }
+  .found { display: none; align-items: center; gap: 10px; margin-top: 12px; padding: 12px 14px; border-radius: 16px; background: var(--on-soft); color: var(--on-ink); font-size: 14px; }
+  .found.show { display: flex; }
+  .found b { font: 700 18px var(--num); }
+  details.manual { margin-top: 16px; }
+  details.manual summary { font-size: 13.5px; color: var(--muted); cursor: pointer; list-style: none; }
+  details.manual summary::-webkit-details-marker { display: none; }
+  details.manual summary::after { content: " ›"; }
+  details[open].manual summary::after { content: " ⌄"; }
+  .qgrid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-top: 12px; }
+  .qgrid button { border: 0; background: var(--soft); border-radius: 13px; padding: 12px 0; font: 650 16px var(--num); cursor: pointer; font-variant-numeric: tabular-nums; }
+  .qgrid button.sel { background: var(--off); color: #fff; }
+  .actions { display: flex; gap: 10px; margin-top: 22px; }
+  .primary, .secondary { flex: 1; border: 0; border-radius: 16px; padding: 15px; font-weight: 650; cursor: pointer; }
+  .primary { background: var(--ink); color: var(--bg); }
+  .primary:disabled { opacity: .35; }
+  .secondary { background: var(--soft); }
+  .danger { display: block; margin: 16px auto 0; background: none; border: 0; color: var(--warn-ink); font-size: 13px; cursor: pointer; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="who">
+    <div class="eyebrow">Полтаваобленерго</div>
+    <h1 id="title">Світло</h1>
+  </div>
+  <button class="icon-btn" id="refreshBtn" aria-label="Оновити">
+    <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 11a8 8 0 1 0-2.3 5.7"/><path d="M20 4v7h-7"/></svg>
+  </button>
+</header>
+
+<div class="place-row" id="places"></div>
+
+<section class="card" id="now">
+  <span class="state" id="state"><i></i><span id="stateText">…</span></span>
+  <div class="big" id="big">—</div>
+  <div class="lead" id="lead">Завантаження графіка…</div>
+  <div class="barwrap" id="barwrap">
+    <div class="bar" id="bar"><div class="fill" id="fill"></div><span class="pct" id="pct"></span></div>
+    <div class="bar-ends"><span id="barFrom"></span><span id="barTo"></span></div>
+    <a class="alert" id="alert" target="_blank" rel="noopener">
+      <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M12 7v6"/><path d="M12 17h.01"/></svg></span>
+      <span class="txt"><b id="alertTitle">Діють ГАВ</b> · <span>ГПВ може не діяти</span></span>
+      <span class="tm" id="alertTime"></span>
+    </a>
+  </div>
+  <div class="next" id="next"></div>
+</section>
+
+<section class="card" id="days"></section>
+<div class="legend"><span>світло є</span><span class="o">немає</span><span class="m">можливо</span></div>
+
+<footer id="footer"></footer>
+
+<dialog id="dlg">
+  <form class="sheet" method="dialog" id="form">
+    <div class="grab"></div>
+    <h3 id="dlgTitle">Ваша адреса</h3>
+    <div class="muted" style="font-size:14px">Черга визначиться автоматично. Адреса зберігається лише на цьому телефоні.</div>
+
+    <label class="f" for="addrInput">Адреса</label>
+    <div class="inp">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-7-6.2-7-11.5A7 7 0 0 1 19 9.5C19 14.8 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/></svg>
+      <input type="text" id="addrInput" placeholder="Полтава, Соборності 12" autocomplete="off" enterkeyhint="search">
+    </div>
+    <div class="hint" id="addrHint">Формат: місто, вулиця, будинок</div>
+    <div class="found" id="found"><span>✓</span><span>Ваша черга <b id="foundQ"></b><br><span style="font-size:12.5px;opacity:.85" id="foundNote"></span></span></div>
+    <ul class="results" id="results"></ul>
+
+    <details class="manual" id="manual">
+      <summary>Обрати чергу вручну</summary>
+      <div class="qgrid" id="qgrid"></div>
+    </details>
+
+    <div class="actions">
+      <button class="secondary" value="cancel" formnovalidate>Скасувати</button>
+      <button class="primary" value="save" id="saveBtn" disabled>Зберегти</button>
+    </div>
+    <button type="button" class="danger" id="deleteBtn">Видалити цю адресу</button>
+  </form>
+</dialog>
+
+<script src="search.js"></script>
+<script>
+"use strict";
+const QUEUES = ["1.1","1.2","2.1","2.2","3.1","3.2","4.1","4.2","5.1","5.2","6.1","6.2"];
+const LS = { places: "svitlo.places", active: "svitlo.active", cache: "svitlo.cache" };
+const $ = (id) => document.getElementById(id);
+const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+const load = (k, d) => { try { return JSON.parse(localStorage.getItem(k)) ?? d; } catch { return d; } };
+const save = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch {} };
+const PIN = '<svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-7-6.2-7-11.5A7 7 0 0 1 19 9.5C19 14.8 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/></svg>';
+
+/* ---------- адреси (зберігаються лише на телефоні) ---------- */
+let places = load(LS.places, []);
+let activeId = load(LS.active, places[0]?.id ?? null);
+const active = () => places.find((p) => p.id === activeId) || places[0] || null;
+
+/* ---------- дані ---------- */
+let { schedule = null, status = null } = load(LS.cache, {});
+let addresses = null;
+
+async function fetchJSON(url) {
+  const r = await fetch(url + "?t=" + Date.now(), { cache: "no-store" });
+  if (!r.ok) throw new Error(r.status);
+  return r.json();
+}
+async function refresh() {
+  $("refreshBtn").classList.add("spin");
+  const [s, st] = await Promise.allSettled([fetchJSON("data/schedule.json"), fetchJSON("data/status.json")]);
+  if (s.status === "fulfilled") schedule = s.value;
+  if (st.status === "fulfilled") status = st.value;
+  save(LS.cache, { schedule, status });
+  setTimeout(() => $("refreshBtn").classList.remove("spin"), 300);
+  render();
+}
+async function loadAddresses() {
+  if (addresses) return addresses;
+  try { addresses = (await (await fetch("data/addresses.json")).json()); } catch { addresses = { rows: [] }; }
+  return addresses;
+}
+
+/* ---------- час ---------- */
+const hm = (d) => d.toLocaleTimeString("uk-UA", { hour: "2-digit", minute: "2-digit" });
+function durParts(ms) {
+  const m = Math.max(0, Math.round(ms / 60000));
+  if (m < 1) return ["<1", "хв"];
+  const h = Math.floor(m / 60), mm = m % 60;
+  return !h ? [mm, "хв"] : mm ? [h, "год", mm, "хв"] : [h, "год"];
+}
+const durText = (ms) => durParts(ms).join(" ").replace(/(\d) (год|хв)/g, "$1 $2");
+const slotStart = (date, i) => { const [y, m, d] = date.split("-").map(Number); return new Date(y, m - 1, d, 0, 30 * i); };
+function dayLabel(date) {
+  const today = new Date(); today.setHours(0, 0, 0, 0);
+  const d = slotStart(date, 0), diff = Math.round((d - today) / 864e5);
+  const txt = d.toLocaleDateString("uk-UA", { weekday: "long", day: "numeric", month: "long" });
+  return diff === 0 ? ["Сьогодні", txt] : diff === 1 ? ["Завтра", txt] : [txt[0].toUpperCase() + txt.slice(1), ""];
+}
+function segments(queue) {
+  const segs = [];
+  for (const day of schedule?.days || []) {
+    const s = day.slots[queue]; if (!s) continue;
+    for (let i = 0; i < 48; i++) {
+      const v = s[i] === "0" ? "off" : s[i] === "?" ? "maybe" : "on";
+      const start = slotStart(day.date, i), end = slotStart(day.date, i + 1), last = segs.at(-1);
+      if (last && last.v === v && +last.end === +start) last.end = end; else segs.push({ v, start, end });
+    }
+  }
+  return segs;
+}
+
+/* ---------- головна картка ---------- */
+const STATE = { on: "Світло є", off: "Світла немає", maybe: "Можливе вимкнення" };
+const ICON_CLOCK = '<svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/></svg>';
+function renderNow(place) {
+  const now = new Date(), segs = segments(place.queue);
+  const i = segs.findIndex((s) => s.start <= now && now < s.end);
+  const card = $("now"), bar = $("bar");
+  if (i < 0) {
+    card.className = "card"; $("state").className = "state"; $("stateText").textContent = "Немає даних";
+    $("big").className = "big text"; $("big").textContent = schedule ? "Графік очікується" : "Немає зв'язку";
+    $("lead").textContent = schedule ? "Обленерго ще не опублікувало графік на сьогодні" : "Не вдалося завантажити графік";
+    bar.className = "bar"; $("fill").style.width = "0"; $("pct").textContent = "";
+    $("barFrom").textContent = $("barTo").textContent = ""; $("next").innerHTML = "";
+    return;
+  }
+  const cur = segs[i], next = segs[i + 1], lastOn = cur.v === "on" && !next;
+  card.className = "card " + cur.v;
+  $("state").className = "state " + cur.v; $("stateText").textContent = STATE[cur.v];
+  if (lastOn) {
+    $("big").className = "big text"; $("big").textContent = "Без відключень";
+    $("lead").textContent = "За графіком до кінця опублікованих даних";
+  } else {
+    $("big").className = "big";
+    $("big").innerHTML = durParts(cur.end - now).map((p, k) => (k % 2 ? `<small>${p}</small>` : p)).join("");
+    const what = cur.v === "on" ? (next.v === "maybe" ? "до можливого вимкнення" : "до вимкнення")
+               : cur.v === "off" ? (next?.v === "maybe" ? "до можливого ввімкнення" : "до ввімкнення")
+               : (next?.v === "on" ? "до ввімкнення" : "до вимкнення");
+    $("lead").innerHTML = `${what} о <b>${hm(cur.end)}</b>`;
+  }
+  const p = Math.min(1, Math.max(0, (now - cur.start) / (cur.end - cur.start)));
+  bar.className = "bar " + cur.v;
+  $("fill").style.width = Math.max(7, p * 100).toFixed(2) + "%";
+  $("pct").textContent = lastOn ? "" : Math.round(p * 100) + "%";
+  $("barFrom").innerHTML = `${cur.v === "off" ? "вимкнули" : cur.v === "on" ? "світло з" : "з"} <b>${hm(cur.start)}</b>`;
+  $("barTo").innerHTML = lastOn ? "" : `${cur.v === "off" ? "ввімкнуть" : "вимкнуть"} <b>${hm(cur.end)}</b>`;
+
+  // що далі
+  let nx = "";
+  if (cur.v === "on") {
+    const off = segs.slice(i + 1).find((s) => s.v !== "on");
+    if (off) nx = `Далі ${off.v === "maybe" ? "можливе вимкнення" : "без світла"} <b>${hm(off.start)}–${hm(off.end)}</b> · ${durText(off.end - off.start)}`;
+  } else {
+    const on = segs.slice(i + 1).find((s) => s.v === "on");
+    const off2 = on && segs.slice(segs.indexOf(on) + 1).find((s) => s.v !== "on");
+    if (on) nx = off2 ? `Після ввімкнення світло буде до <b>${hm(off2.start)}</b> · ${durText(off2.start - on.start)}` : `Після ввімкнення відключень за графіком більше немає`;
+  }
+  $("next").innerHTML = nx ? `<span class="dot">${ICON_CLOCK}</span><span>${nx}</span>` : "";
+}
+
+function renderAlert() {
+  const e = status?.emergency, on = !!e?.active;
+  $("alert").classList.toggle("show", on);
+  $("barwrap").classList.toggle("alerted", on);
+  if (!on) return;
+  $("alertTitle").textContent = e.type === "СГАВ" ? "Діють СГАВ" : "Діють ГАВ";
+  $("alertTime").textContent = e.postedAt ? hm(new Date(e.postedAt)) + " ›" : "›";
+  $("alert").href = e.link || "https://t.me/poltavaOE";
+  $("alert").title = e.text || "";
+}
+
+/* ---------- графік на дні ---------- */
+function renderDays(place) {
+  const box = $("days"), now = new Date();
+  const today = new Date(); today.setHours(0, 0, 0, 0);
+  const shown = (schedule?.days || []).filter((d) => d.slots[place.queue] && slotStart(d.date, 48) > today).slice(0, 2);
+  if (!shown.length) { box.innerHTML = `<div class="empty"><span class="em">🗓</span>Графік ще не опубліковано</div>`; return; }
+  box.innerHTML = shown.map((d) => {
+    const s = d.slots[place.queue], [title, sub] = dayLabel(d.date);
+    const ds = slotStart(d.date, 0), de = slotStart(d.date, 48), span = de - ds;
+    const pos = (t) => ((t - ds) / span * 100).toFixed(3) + "%";
+    let segs = "", ints = [], offMin = 0;
+    for (let i = 0; i < 48;) {
+      if (s[i] === "1") { i++; continue; }
+      const k = s[i]; let j = i; while (j < 48 && s[j] === k) j++;
+      const a = slotStart(d.date, i), b = slotStart(d.date, j);
+      segs += `<div class="seg ${k === "?" ? "m" : "o"}" style="left:${pos(a)};width:calc(${pos(b)} - ${pos(a)})"></div>`;
+      if (k === "0") offMin += (b - a) / 60000;
+      ints.push(`<li class="${k === "?" ? "m" : ""} ${b <= now ? "done" : ""}">${hm(a)} – ${j === 48 ? "24:00" : hm(b)}${k === "?" ? " · можливо" : ""}</li>`);
+      i = j;
+    }
+    const grid = [6, 12, 18].map((h) => `<div class="grid" style="left:${(h / 24 * 100)}%"></div>`).join("");
+    const isToday = now >= ds && now < de;
+    const nowEls = isToday ? `<div class="past" style="width:${pos(now)}"></div><div class="nowline" style="left:${pos(now)}"></div>` : "";
+    const tag = isToday ? `<span class="nowtag" style="left:clamp(22px, ${pos(now)}, calc(100% - 22px))">${hm(now)}</span>` : "";
+    const total = offMin ? `без світла ${durText(offMin * 60000)}` : "без відключень";
+    return `<div class="day">
+      <div class="dayhead"><div><h2>${title}</h2><div class="sub">${sub}</div></div><span class="total ${offMin ? "" : "zero"}">${total}</span></div>
+      <div class="trackwrap ${isToday ? "has-now" : ""}">${tag}<div class="track">${segs}${grid}${nowEls}</div></div>
+      <div class="ticks"><span style="left:0">00</span><span style="left:25%">06</span><span style="left:50%">12</span><span style="left:75%">18</span><span style="left:100%">24</span></div>
+      <ul class="ints">${ints.join("") || `<li class="none">Відключень не заплановано</li>`}</ul>
+    </div>`;
+  }).join("");
+}
+
+function renderFooter() {
+  const t = schedule?.checkedAt ? new Date(schedule.checkedAt) : null;
+  const stale = t && Date.now() - t > 3 * 3600e3;
+  $("footer").innerHTML =
+    (t ? `<span class="${stale ? "stale" : ""}">Перевірено ${t.toLocaleString("uk-UA", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}${stale ? " — дані можуть бути застарілими" : ""}</span><br>` : "") +
+    `Джерела: <a href="https://www.poe.pl.ua/disconnection/power-outages/" target="_blank" rel="noopener">poe.pl.ua</a> · <a href="https://t.me/poltavaOE" target="_blank" rel="noopener">Telegram POE</a><br>Неофіційний застосунок · офіційні повідомлення мають пріоритет`;
+}
+
+const shortAddr = (a) => (a || "Моя адреса").replace(/^(м\.|місто)\s*/i, "");
+function renderPlaces() {
+  const a = active();
+  $("places").innerHTML = places.map((p) =>
+    `<button class="chip ${p.id === a?.id ? "active" : ""}" data-id="${p.id}">${PIN}<span>${esc(shortAddr(p.address))}</span><b>${p.queue}</b></button>`).join("")
+    + `<button class="chip add" data-id="new">+ адреса</button>`;
+}
+
+function render() {
+  const place = active();
+  renderPlaces(); renderAlert(); renderFooter();
+  if (!place) {
+    $("title").textContent = "Світло";
+    $("now").className = "card"; $("state").className = "state"; $("stateText").textContent = "Адресу не вказано";
+    $("big").className = "big text"; $("big").textContent = "Додайте адресу";
+    $("lead").textContent = "Натисніть «+ адреса» — черга визначиться сама";
+    $("days").innerHTML = ""; $("next").innerHTML = "";
+    return;
+  }
+  $("title").textContent = `Черга ${place.queue}`;
+  renderNow(place); renderDays(place);
+}
+
+/* ---------- діалог адреси з автопошуком черги ---------- */
+let editing = null, selQueue = null, lastResults = [];
+$("qgrid").innerHTML = QUEUES.map((q) => `<button type="button" data-q="${q}">${q}</button>`).join("");
+function choose(q, note) {
+  selQueue = q;
+  for (const b of $("qgrid").children) b.classList.toggle("sel", b.dataset.q === q);
+  $("found").classList.toggle("show", !!q);
+  $("foundQ").textContent = q || "";
+  $("foundNote").textContent = note || "";
+  $("saveBtn").disabled = !q;
+}
+$("qgrid").onclick = (e) => { const q = e.target.dataset?.q; if (q) { choose(q, "обрано вручну"); markResults(); } };
+
+function markResults() { [...$("results").children].forEach((li) => li.classList.toggle("sel", li.dataset.q === selQueue)); }
+async function runSearch() {
+  const text = $("addrInput").value.trim();
+  if (text.length < 3) { $("results").innerHTML = ""; $("addrHint").textContent = "Формат: місто, вулиця, будинок"; return; }
+  const data = await loadAddresses();
+  const { query, results } = AddrSearch.search(data.rows, text, 8);
+  lastResults = results;
+  const auto = AddrSearch.decide(results);
+  if (!results.length) {
+    $("addrHint").textContent = data.rows.length ? "Не знайдено. Спробуйте лише назву вулиці або населеного пункту" : "Список адрес ще не завантажено — оберіть чергу вручну";
+  } else if (auto) {
+    $("addrHint").textContent = "Знайдено в графіку обленерго";
+    choose(auto, results[0].kind === "house" ? `будинок ${query.house} є у списку` : "вулиця у списку повністю");
+  } else {
+    $("addrHint").textContent = results[0].approx ? `Будинку ${query.house} немає у списку — оберіть найближчий варіант` : "Адреса є в кількох місцях — оберіть свій варіант";
+  }
+  // показуємо до 5 найкращих збігів з фрагментом тексту з PDF
+  const seen = new Set();
+  const minScore = auto ? results[0].score - 1.5 : -Infinity;   // коли черга однозначна — без слабких збігів
+  $("results").innerHTML = results.filter((r) => r.score >= minScore).filter((r) => { const k = r.q + r.t.slice(r.at - 20, r.at + 40); if (seen.has(k)) return false; seen.add(k); return true; })
+    .slice(0, 5).map((r) => {
+      const s = AddrSearch.snippet(r, 50, 110);
+      const tag = r.kind === "house" ? `<span class="tag">будинок у списку</span>` : r.kind === "whole" ? `<span class="tag">уся вулиця</span>` : `<span class="tag w">вулиця, номер не вказано</span>`;
+      return `<li data-q="${r.q}"><span class="qb">${r.q}<small>черга</small></span><span class="sn">${tag}<br>${esc(s.pre)}<mark>${esc(s.hit)}</mark>${esc(s.post)}</span></li>`;
+    }).join("");
+  markResults();
+}
+let searchTimer;
+$("addrInput").oninput = () => { clearTimeout(searchTimer); searchTimer = setTimeout(runSearch, 250); };
+$("results").onclick = (e) => { const li = e.target.closest("li"); if (li) { choose(li.dataset.q, "обрано зі списку"); markResults(); } };
+
+function openDialog(place) {
+  editing = place;
+  $("dlgTitle").textContent = place ? "Змінити адресу" : "Ваша адреса";
+  $("addrInput").value = place?.address || "";
+  $("results").innerHTML = ""; $("addrHint").textContent = "Формат: місто, вулиця, будинок";
+  choose(place?.queue || null, place ? "збережена черга" : "");
+  $("manual").open = false;
+  $("deleteBtn").style.display = place ? "" : "none";
+  $("dlg").showModal();
+  loadAddresses();
+  if (place?.address) runSearch().then(() => choose(place.queue, "збережена черга")).then(markResults);
+}
+$("form").addEventListener("submit", (e) => {
+  if (e.submitter?.value !== "save" || !selQueue) return;
+  const address = $("addrInput").value.trim();
+  if (editing) Object.assign(editing, { address, queue: selQueue });
+  else { const p = { id: Date.now().toString(36), address, queue: selQueue }; places.push(p); activeId = p.id; }
+  save(LS.places, places); save(LS.active, activeId);
+  render();
+});
+$("deleteBtn").onclick = () => {
+  places = places.filter((p) => p !== editing); activeId = places[0]?.id ?? null;
+  save(LS.places, places); save(LS.active, activeId); $("dlg").close(); render();
+};
+$("refreshBtn").onclick = refresh;
+$("places").onclick = (e) => {
+  const b = e.target.closest("button"); if (!b) return;
+  if (b.dataset.id === "new") return openDialog(null);
+  if (b.dataset.id === active()?.id) return openDialog(active());   // повторне натискання — редагування
+  activeId = b.dataset.id; save(LS.active, activeId); render();
+};
+
+/* ---------- старт ---------- */
+render(); refresh();
+if (!places.length) setTimeout(() => openDialog(null), 450);
+setInterval(render, 30 * 1000);
+setInterval(refresh, 5 * 60 * 1000);
+document.addEventListener("visibilitychange", () => { if (!document.hidden) refresh(); });
+if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catch(() => {});
+</script>
+</body>
+</html>
