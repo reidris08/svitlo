@@ -93,6 +93,7 @@
   .barwrap { position: relative; margin-top: 24px; }
   .bar { position: relative; height: 40px; border-radius: 999px; background: var(--soft); }
   .bar .fill { position: absolute; inset: 0 auto 0 0; width: 0; min-width: 40px; border-radius: 999px; background: var(--off); transition: width .8s cubic-bezier(.2,.8,.2,1); }
+  .bar:not(.on):not(.off):not(.maybe) .fill { display: none; }
   .bar.on .fill { background: var(--on); } .bar.maybe .fill { background: repeating-linear-gradient(135deg, var(--on) 0 8px, var(--off) 8px 16px); }
   .bar .fill::after { content: ""; position: absolute; right: 4px; top: 4px; width: 32px; height: 32px; border-radius: 50%; background: var(--ink); box-shadow: 0 0 0 3px var(--card); }
   .bar .pct { position: absolute; right: 16px; top: 0; bottom: 0; display: flex; align-items: center; font-weight: 700; font-size: 13px; color: var(--muted); font-variant-numeric: tabular-nums; }
