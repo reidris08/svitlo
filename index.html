@@ -290,8 +290,8 @@
   </form>
 </dialog>
 
-<script src="poe.js?v=8"></script>
-<script src="search.js?v=8"></script>
+<script src="poe.js?v=9"></script>
+<script src="search.js?v=9"></script>
 <script>
 "use strict";
 const QUEUES = ["1.1","1.2","2.1","2.2","3.1","3.2","4.1","4.2","5.1","5.2","6.1","6.2"];
@@ -308,7 +308,7 @@ let activeId = load(LS.active, places[0]?.id ?? null);
 const active = () => places.find((p) => p.id === activeId) || places[0] || null;
 
 /* ---------- дані ---------- */
-let { schedule = null, status = null } = load(LS.cache, {});
+let { schedule = null, status = null, unloading = null } = load(LS.cache, {});
 let addresses = null;
 
 async function fetchJSON(url) {
@@ -320,11 +320,12 @@ async function refresh() {
   $("refreshBtn").classList.add("spin");
   // графік — напряму з сайту обленерго (свіжий, одразу з «завтра»);
   // якщо сайт недоступний — копія, яку збирає GitHub
-  const [live, s, st] = await Promise.allSettled([POE.fetchDays(), fetchJSON("data/schedule.json"), fetchJSON("data/status.json")]);
+  const [live, s, st, un] = await Promise.allSettled([POE.fetchDays(), fetchJSON("data/schedule.json"), fetchJSON("data/status.json"), POE.fetchUnloading()]);
+  if (un.status === "fulfilled") unloading = un.value;
   if (live.status === "fulfilled" && live.value.length) schedule = { checkedAt: new Date().toISOString(), source: "poe.pl.ua", days: live.value };
   else if (s.status === "fulfilled") schedule = s.value;
   if (st.status === "fulfilled") status = st.value;
-  save(LS.cache, { schedule, status });
+  save(LS.cache, { schedule, status, unloading });
   setTimeout(() => $("refreshBtn").classList.remove("spin"), 300);
   render();
 }
@@ -423,11 +424,11 @@ function renderNow(place) {
 }
 
 function renderAlert() {
-  const e = status?.emergency, on = !!e?.active;
+  const e = POE.emergencyNow(unloading, status?.emergency), on = !!e;
   $("alert").classList.toggle("show", on);
   $("barwrap").classList.toggle("alerted", on);
   if (!on) return;
-  $("alertTitle").textContent = e.type === "СГАВ" ? "Діють СГАВ" : "Діють ГАВ";
+  $("alertTitle").textContent = (e.type === "СГАВ" ? "Діють СГАВ" : "Діють ГАВ") + (e.from ? ` з ${hm(e.from)}` : "");
   $("alertTime").textContent = "Деталі ›";
   $("alert").href = e.link || "https://t.me/poltavaOE";
   $("alert").title = e.text || "";

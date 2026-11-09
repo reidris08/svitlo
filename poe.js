@@ -54,5 +54,50 @@
     } finally { if (timer) clearTimeout(timer); }
   }
 
-  root.POE = { parse, fetchDays, kyivDate, URL };
+  // Розвантаження (ГАВ, СГАВ, ГОП…) на сьогодні й завтра
+  const UNLOAD_URL = "https://www.poe.pl.ua/customs/unloading-info.php";
+  async function fetchUnloading(timeoutMs = 12000) {
+    const ctrl = typeof AbortController !== "undefined" ? new AbortController() : null;
+    const timer = ctrl && setTimeout(() => ctrl.abort(), timeoutMs);
+    try {
+      const r = await fetch(UNLOAD_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8" },
+        body: "seldate=" + encodeURIComponent(JSON.stringify({ date_in: kyivDate() })),
+        signal: ctrl?.signal,
+      });
+      const t = (await r.text()).trim();
+      return t ? JSON.parse(t) : [];
+    } finally { if (timer) clearTimeout(timer); }
+  }
+
+  // "09-11-2026" + 9:44 → Date (київський час; телефон теж у Києві)
+  const toDate = (dmy, h, m) => { const [d, mo, y] = dmy.split(" ")[0].split("-").map(Number); return new Date(y, mo - 1, d, h || 0, m || 0); };
+
+  // Чи діють зараз ГАВ / СГАВ.
+  // list — розвантаження з сайту; tg — статус із Telegram (через GitHub): {active, type, postedAt, link, text}
+  // Сайт не прибирає ГАВ після скасування, тому скасування беремо з Telegram.
+  function emergencyNow(list, tg, now = new Date()) {
+    const cur = (list || []).filter((e) => /С?ГАВ/.test(e.unloadingtypename || ""))
+      .map((e) => ({
+        type: /СГАВ/.test(e.unloadingtypename) ? "СГАВ" : "ГАВ",
+        from: toDate(e.unloaddata, e.beginhour, e.beginminute),
+        to: toDate(e.unloaddata, e.endhour, e.endminute === 59 ? 59 : e.endminute),
+        created: e.createddate ? toDate(e.createddate, +e.createddate.split(" ")[1]?.split(":")[0], +e.createddate.split(" ")[1]?.split(":")[1]) : null,
+        note: e.note || "",
+      }))
+      .filter((e) => e.from <= now && now <= new Date(+e.to + 60000))
+      .sort((a, b) => b.from - a.from)[0];
+    const tgTime = tg?.postedAt ? new Date(tg.postedAt) : null;
+    if (cur) {
+      // у Telegram після оголошення написали «скасовано» — не показуємо
+      if (tg && !tg.active && tgTime && cur.created && tgTime > cur.created) return null;
+      return { active: true, type: cur.type, from: cur.from, note: cur.note, link: tg?.link || "https://t.me/poltavaOE", source: "poe.pl.ua" };
+    }
+    // на сайті нічого немає, але Telegram свіжий і каже «діють»
+    if (tg?.active && tgTime && now - tgTime < 18 * 3600e3) return { active: true, type: tg.type, from: tgTime, link: tg.link, source: "telegram" };
+    return null;
+  }
+
+  root.POE = { parse, fetchDays, fetchUnloading, emergencyNow, kyivDate, URL };
 })(typeof window !== "undefined" ? window : globalThis);

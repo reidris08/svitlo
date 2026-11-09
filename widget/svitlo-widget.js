@@ -91,6 +91,43 @@ async function getLiveSchedule() {
   } catch (e) { return null; }
 }
 
+// ---------- ГАВ / СГАВ ----------
+// Сайт обленерго показує оголошені ГАВ/СГАВ, але не прибирає їх після скасування,
+// тому скасування беремо з Telegram (status.json від GitHub).
+async function getUnloading() {
+  try {
+    const f = new DateFormatter(); f.dateFormat = "dd-MM-yyyy";
+    const r = new Request("https://www.poe.pl.ua/customs/unloading-info.php");
+    r.method = "POST"; r.timeoutInterval = 15;
+    r.headers = { "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8" };
+    r.body = "seldate=" + encodeURIComponent(JSON.stringify({ date_in: f.string(new Date()) }));
+    const t = (await r.loadString()).trim();
+    return t ? JSON.parse(t) : [];
+  } catch (e) { return null; }
+}
+const toDateDMY = (dmy, h, m) => { const [d, mo, y] = dmy.split(" ")[0].split("-").map(Number); return new Date(y, mo - 1, d, h || 0, m || 0); };
+function emergencyNow(list, tg, now = new Date()) {
+  const cur = (list || []).filter((e) => /С?ГАВ/.test(e.unloadingtypename || ""))
+    .map((e) => {
+      const ct = (e.createddate || "").split(" ")[1] || "0:0";
+      return {
+        type: /СГАВ/.test(e.unloadingtypename) ? "СГАВ" : "ГАВ",
+        from: toDateDMY(e.unloaddata, e.beginhour, e.beginminute),
+        to: toDateDMY(e.unloaddata, e.endhour, e.endminute),
+        created: e.createddate ? toDateDMY(e.createddate, +ct.split(":")[0], +ct.split(":")[1]) : null,
+      };
+    })
+    .filter((e) => e.from <= now && now <= new Date(+e.to + 60000))
+    .sort((a, b) => b.from - a.from)[0];
+  const tgTime = tg && tg.postedAt ? new Date(tg.postedAt) : null;
+  if (cur) {
+    if (tg && !tg.active && tgTime && cur.created && tgTime > cur.created) return null;
+    return { active: true, type: cur.type };
+  }
+  if (tg && tg.active && tgTime && now - tgTime < 18 * 3600e3) return { active: true, type: tg.type };
+  return null;
+}
+
 // ---------- розрахунок ----------
 const slotStart = (date, i) => { const [y, m, d] = date.split("-").map(Number); return new Date(y, m - 1, d, 0, 30 * i); };
 function segments(schedule, queue) {
@@ -146,9 +183,9 @@ async function build() {
     return w;
   }
 
-  const [live, status] = await Promise.all([getLiveSchedule(), getJSON("status.json")]);
+  const [live, status, unloading] = await Promise.all([getLiveSchedule(), getJSON("status.json"), getUnloading()]);
   const schedule = live || (await getJSON("schedule.json"));
-  const em = status && status.emergency && status.emergency.active ? status.emergency : null;
+  const em = emergencyNow(unloading, status && status.emergency);
   const now = new Date();
   const segs = segments(schedule, queue);
   const i = segs.findIndex((s) => s.start <= now && now < s.end);
