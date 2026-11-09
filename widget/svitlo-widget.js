@@ -24,7 +24,7 @@ const C = {
   warnInk: new Color("#3A1328"),
 };
 const COLOR = { on: C.on, off: C.off, maybe: C.maybe };
-const LABEL = { on: "Світло є", off: "Світла немає", maybe: "Можливе вимкнення" };
+const LABEL = { on: "Світло є", off: "Світла немає", maybe: "Перемикання світла" };
 
 // ---------- черга ----------
 const QUEUES = ["1.1","1.2","2.1","2.2","3.1","3.2","4.1","4.2","5.1","5.2","6.1","6.2"];
@@ -232,7 +232,7 @@ async function build() {
 
   // верхній рядок: значок, стан, черга
   const head = main.addStack(); head.centerAlignContent(); head.size = new Size(innerW, 0);
-  const SYM = { on: "lightbulb.fill", off: "bolt.slash.fill", maybe: "bolt.badge.clock.fill" };
+  const SYM = { on: "lightbulb.fill", off: "bolt.slash.fill", maybe: "arrow.triangle.2.circlepath" };
   const badge = head.addStack(); badge.size = new Size(22, 22); badge.cornerRadius = 11; badge.centerAlignContent();
   badge.backgroundColor = COLOR[cur.v];
   const sym = SFSymbol.named(SYM[cur.v]) || SFSymbol.named("bolt.fill"); sym.applyBoldWeight();

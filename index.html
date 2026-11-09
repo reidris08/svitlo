@@ -22,7 +22,7 @@
     --bg: #F7F1E5; --card: #FFFCF6; --ink: #1D1D1B; --muted: #8C8679; --line: #EDE5D6; --soft: #F3ECDF;
     --on: #F2D872; --on-soft: #FBF0C6; --on-ink: #5E4B0E;        /* світло є — масляно-жовтий */
     --off: #A9C2EA; --off-deep: #7F9FD6; --off-soft: #E3ECFA; --off-ink: #2C4470;  /* немає — блакитний */
-    --maybe: #F4B6D6; --maybe-soft: #FCE4F0; --maybe-ink: #7A2E57;  /* можливо — рожевий */
+    --maybe: #F4B6D6; --maybe-soft: #FCE4F0; --maybe-ink: #7A2E57;  /* перемикання світла */
     --olive: #A4B36C; --olive-soft: #E7ECD3;
     --warn: #F6BCD9; --warn-ink: #3A1328; --accent: #E5484D;
     --shadow: 0 1px 0 rgba(60,45,20,.04), 0 12px 32px -14px rgba(60,45,20,.18);
@@ -258,7 +258,7 @@
 </section>
 
 <section class="card" id="days"></section>
-<div class="legend"><span>світло є</span><span class="o">немає</span><span class="m">можливо</span></div>
+<div class="legend"><span>світло є</span><span class="o">немає</span><span class="m">перемикання</span></div>
 
 <footer id="footer"></footer>
 
@@ -290,8 +290,8 @@
   </form>
 </dialog>
 
-<script src="poe.js?v=9"></script>
-<script src="search.js?v=9"></script>
+<script src="poe.js?v=10"></script>
+<script src="search.js?v=10"></script>
 <script>
 "use strict";
 const QUEUES = ["1.1","1.2","2.1","2.2","3.1","3.2","4.1","4.2","5.1","5.2","6.1","6.2"];
@@ -366,7 +366,7 @@ function segments(queue) {
 
 /* ---------- головна картка ---------- */
 // Іконки: лампочка (світло є), перекреслена блискавка (немає),
-// «можливо» — діагональні половинки цих двох знаків
+// «перемикання світла» — діагональні половинки цих двох знаків
 const BULB = '<path d="M9 18h6"/><path d="M10 21h4"/><path d="M12 3a6 6 0 0 0-3.5 10.9c.6.5 1 1.2 1 2.1h5c0-.9.4-1.6 1-2.1A6 6 0 0 0 12 3z"/>';
 const ZAPOFF = '<path d="M12.4 6.7 13 2l-2.4 2.9"/><path d="M18.6 12.9 21 10h-5.3"/><path d="M8 8l-5 6h9l-1 8 5-6"/><path d="M3 3l18 18"/>';
 const SVG = (inner) => `<svg viewBox="0 0 24 24" fill="none" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">${inner}</svg>`;
@@ -375,7 +375,7 @@ const ICO = {
   off: SVG(ZAPOFF),
   maybe: SVG(`<g transform="translate(0.5 0.5) scale(.52)" stroke-width="3.6">${BULB}</g><g transform="translate(11 11) scale(.52)" stroke-width="3.6">${ZAPOFF}</g><path d="M21.5 2.5 2.5 21.5" stroke-width="1.4" opacity=".55"/>`),
 };
-const STATE = { on: "Світло є", off: "Світла немає", maybe: "Можливе вимкнення" };
+const STATE = { on: "Світло є", off: "Світла немає", maybe: "Перемикання світла" };
 const ICON_CLOCK = '<svg viewBox="0 0 24 24" fill="none" stroke-width="2.2" stroke-linecap="round"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/></svg>';
 function renderNow(place) {
   const now = new Date(), segs = segments(place.queue);
@@ -398,8 +398,8 @@ function renderNow(place) {
   } else {
     $("big").className = "big";
     $("big").innerHTML = durParts(cur.end - now).map((p, k) => (k % 2 ? `<small>${p}</small>` : p)).join("");
-    const what = cur.v === "on" ? (next.v === "maybe" ? "до можливого вимкнення" : "до вимкнення")
-               : cur.v === "off" ? (next?.v === "maybe" ? "до можливого ввімкнення" : "до ввімкнення")
+    const what = cur.v === "on" ? (next.v === "maybe" ? "до перемикання світла" : "до вимкнення")
+               : cur.v === "off" ? (next?.v === "maybe" ? "до перемикання світла" : "до ввімкнення")
                : (next?.v === "on" ? "до ввімкнення" : "до вимкнення");
     $("lead").innerHTML = `${what} о <b>${hm(cur.end)}</b>`;
   }
@@ -414,7 +414,7 @@ function renderNow(place) {
   let nx = "";
   if (cur.v === "on") {
     const off = segs.slice(i + 1).find((s) => s.v !== "on");
-    if (off) nx = `Далі ${off.v === "maybe" ? "можливе вимкнення" : "без світла"} <b>${hm(off.start)}–${hm(off.end)}</b> · ${durText(off.end - off.start)}`;
+    if (off) nx = `Далі ${off.v === "maybe" ? "перемикання світла" : "без світла"} <b>${hm(off.start)}–${hm(off.end)}</b> · ${durText(off.end - off.start)}`;
   } else {
     const on = segs.slice(i + 1).find((s) => s.v === "on");
     const off2 = on && segs.slice(segs.indexOf(on) + 1).find((s) => s.v !== "on");
@@ -440,7 +440,7 @@ function renderDays(place) {
   const today = new Date(); today.setHours(0, 0, 0, 0);
   const shown = (schedule?.days || []).filter((d) => d.slots[place.queue] && slotStart(d.date, 48) > today).slice(0, 2);
   if (!shown.length) { box.innerHTML = `<div class="empty"><span class="em">🗓</span>Графік ще не опубліковано</div>`; return; }
-  const WHAT = { on: "світло є", off: "без світла", maybe: "можливе вимкнення" };
+  const WHAT = { on: "світло є", off: "без світла", maybe: "перемикання світла" };
   box.innerHTML = shown.map((d) => {
     const s = d.slots[place.queue], [title, sub] = dayLabel(d.date);
     // періоди доби (і зі світлом, і без)
@@ -478,7 +478,7 @@ function renderDays(place) {
     const rowOf = (r) => {
       const past = r.b <= now, cur = r.a <= now && now < r.b;
       const prog = cur ? `<span class="prog"><i style="width:${((now - r.a) / (r.b - r.a) * 100).toFixed(1)}%"></i></span>` : "";
-      const label = cur ? (r.v === "off" ? `зараз без світла · ще ${durText(r.b - now)}` : r.v === "on" ? `зараз світло є · ще ${durText(r.b - now)}` : `зараз · ще ${durText(r.b - now)}`) : WHAT[r.v];
+      const label = cur ? (r.v === "off" ? `зараз без світла · ще ${durText(r.b - now)}` : r.v === "on" ? `зараз світло є · ще ${durText(r.b - now)}` : `зараз перемикання світла · ще ${durText(r.b - now)}`) : WHAT[r.v];
       return `<li class="${r.v} ${past ? "past" : ""} ${cur ? "cur" : ""}"><span class="ico">${ICO[r.v]}</span><span><div class="when">${hm(r.a)} – ${r.end24 ? "24:00" : hm(r.b)}</div><div class="what">${label}</div></span><span class="len">${durText(r.b - r.a)}</span>${prog}</li>`;
     };
     // те, що вже минуло, згортаємо в один рядок
