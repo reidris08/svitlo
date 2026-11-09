@@ -4,8 +4,8 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Світло</title>
-<meta name="theme-color" content="#F4F1EC" media="(prefers-color-scheme: light)">
-<meta name="theme-color" content="#17191C" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#F7F1E5" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#171613" media="(prefers-color-scheme: dark)">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
@@ -13,31 +13,37 @@
 <link rel="apple-touch-icon" href="icon-180.png">
 <link rel="icon" href="icon-512.png">
 <link rel="manifest" href="manifest.webmanifest">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;600;700;800&display=swap" rel="stylesheet">
 <style>
+  /* Палітра «пастельний трекер»: кремовий фон, масло, блакить, рожевий, олива; чорні кнопки-пігулки */
   :root {
-    --bg: #F4F1EC; --card: #FFFFFF; --ink: #2B3035; --muted: #848A90; --line: #ECE7DF; --soft: #F7F4EF;
-    --on: #8FB894; --on-2: #B9D6BC; --on-soft: #E6F0E5; --on-ink: #3D6845;
-    --off: #6A7DA0; --off-2: #9DADC9; --off-soft: #E3E8F1; --off-ink: #3B4A68;
-    --maybe: #D7B676; --maybe-soft: #F6EDDA; --maybe-ink: #84652A;
-    --warn: #C9785B; --warn-soft: #FBEAE2; --warn-ink: #8E4831;
-    --shadow: 0 1px 1px rgba(60,48,36,.04), 0 10px 30px -8px rgba(60,48,36,.12);
-    --r: 26px;
-    --num: ui-rounded, "SF Pro Rounded", -apple-system, system-ui, sans-serif;
+    --bg: #F7F1E5; --card: #FFFCF6; --ink: #1D1D1B; --muted: #8C8679; --line: #EDE5D6; --soft: #F3ECDF;
+    --on: #F2D872; --on-soft: #FBF0C6; --on-ink: #5E4B0E;        /* світло є — масляно-жовтий */
+    --off: #A9C2EA; --off-deep: #7F9FD6; --off-soft: #E3ECFA; --off-ink: #2C4470;  /* немає — блакитний */
+    --maybe: #F4B6D6; --maybe-soft: #FCE4F0; --maybe-ink: #7A2E57;  /* можливо — рожевий */
+    --olive: #A4B36C; --olive-soft: #E7ECD3;
+    --warn: #F6BCD9; --warn-ink: #3A1328; --accent: #E5484D;
+    --shadow: 0 1px 0 rgba(60,45,20,.04), 0 12px 32px -14px rgba(60,45,20,.18);
+    --r: 30px;
+    --font: "Manrope", -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, sans-serif;
   }
   @media (prefers-color-scheme: dark) {
     :root {
-      --bg: #17191C; --card: #22262A; --ink: #EDEAE5; --muted: #979DA4; --line: #30353A; --soft: #1C1F23;
-      --on: #84AE8A; --on-2: #5E7F63; --on-soft: #26332A; --on-ink: #B9DABC;
-      --off: #7D92B8; --off-2: #556786; --off-soft: #272F3D; --off-ink: #C5D0E6;
-      --maybe: #CDAE6C; --maybe-soft: #3A3324; --maybe-ink: #E8D3A0;
-      --warn: #D88E70; --warn-soft: #3D2A23; --warn-ink: #F4C8B5;
-      --shadow: 0 0 0 1px rgba(255,255,255,.03);
+      --bg: #171613; --card: #22211D; --ink: #F5F0E6; --muted: #A39C8E; --line: #34322C; --soft: #2B2924;
+      --on: #E9CF68; --on-soft: #3B3420; --on-ink: #F6E3A1;
+      --off: #93AEDD; --off-deep: #7896CF; --off-soft: #26303F; --off-ink: #CFDCF5;
+      --maybe: #E6A3C6; --maybe-soft: #3D2733; --maybe-ink: #F7CFE3;
+      --olive: #9AAA62; --olive-soft: #2D3122;
+      --warn: #E6A3C6; --warn-ink: #2A0F1E;
+      --shadow: 0 0 0 1px rgba(255,255,255,.035);
     }
   }
   * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
   html, body { margin: 0; background: var(--bg); color: var(--ink); }
   body {
-    font: 16px/1.4 -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, sans-serif;
+    font: 16px/1.4 var(--font);
     padding: max(16px, env(safe-area-inset-top)) 16px max(28px, env(safe-area-inset-bottom));
     max-width: 520px; margin: 0 auto; -webkit-font-smoothing: antialiased;
   }
@@ -45,14 +51,13 @@
   .muted { color: var(--muted); }
   @keyframes rise { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
   .card, header, .place-row { animation: rise .45s ease both; }
-  .card:nth-of-type(2) { animation-delay: .06s; }
 
   /* шапка */
-  header { display: flex; align-items: center; gap: 10px; margin: 6px 2px 10px; }
+  header { display: flex; align-items: center; gap: 10px; margin: 6px 2px 12px; }
   header .who { flex: 1; min-width: 0; }
-  header .eyebrow { font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); font-weight: 600; }
-  header h1 { margin: 2px 0 0; font: 700 30px/1.1 var(--num); letter-spacing: -.01em; }
-  .icon-btn { border: 0; background: var(--card); width: 42px; height: 42px; border-radius: 50%; box-shadow: var(--shadow); display: grid; place-items: center; cursor: pointer; transition: transform .15s; }
+  header .eyebrow { font-size: 12px; letter-spacing: .02em; color: var(--muted); font-weight: 600; }
+  header h1 { margin: 2px 0 0; font-weight: 800; font-size: 32px; line-height: 1.05; letter-spacing: -.02em; }
+  .icon-btn { border: 1.5px dashed color-mix(in srgb, var(--ink) 45%, transparent); background: transparent; width: 44px; height: 44px; border-radius: 50%; display: grid; place-items: center; cursor: pointer; transition: transform .15s; }
   .icon-btn:active { transform: scale(.94); }
   .icon-btn svg { width: 19px; height: 19px; stroke: var(--ink); }
   .icon-btn.spin svg { animation: spin .8s linear infinite; }
@@ -60,146 +65,157 @@
 
   .place-row { display: flex; gap: 8px; overflow-x: auto; margin: 0 -16px 16px; padding: 2px 16px 4px; scrollbar-width: none; }
   .place-row::-webkit-scrollbar { display: none; }
-  .chip { display: inline-flex; align-items: center; gap: 6px; border: 0; background: var(--card); box-shadow: var(--shadow); border-radius: 999px; padding: 8px 14px 8px 11px; font-size: 13.5px; white-space: nowrap; cursor: pointer; max-width: 82%; }
+  .chip { display: inline-flex; align-items: center; gap: 7px; border: 0; background: var(--card); box-shadow: var(--shadow); border-radius: 999px; padding: 10px 16px 10px 12px; font-size: 14px; font-weight: 600; white-space: nowrap; cursor: pointer; max-width: 82%; }
   .chip span { overflow: hidden; text-overflow: ellipsis; }
   .chip svg { width: 15px; height: 15px; flex: none; stroke: currentColor; opacity: .7; }
   .chip.active { background: var(--ink); color: var(--bg); }
-  .chip b { font-weight: 650; font-variant-numeric: tabular-nums; opacity: .75; }
-  .chip.add { padding: 8px 14px; color: var(--muted); }
+  .chip b { font-weight: 800; font-variant-numeric: tabular-nums; padding: 2px 8px; border-radius: 999px; background: var(--on); color: #1D1D1B; margin-right: -6px; }
+  .chip.add { padding: 10px 16px; color: var(--muted); box-shadow: none; border: 1.5px dashed var(--line); background: transparent; }
 
   .card { background: var(--card); border-radius: var(--r); box-shadow: var(--shadow); padding: 22px; margin-bottom: 14px; position: relative; overflow: hidden; }
 
-  /* головна картка — тло м'яко підфарбоване станом */
+  /* головна картка */
   #now { padding-bottom: 20px; }
-  #now::before { content: ""; position: absolute; inset: 0; pointer-events: none; opacity: .9; transition: background .5s; }
-  #now.on::before { background: radial-gradient(120% 90% at 100% 0%, var(--on-soft) 0%, transparent 60%); }
-  #now.off::before { background: radial-gradient(120% 90% at 100% 0%, var(--off-soft) 0%, transparent 60%); }
-  #now.maybe::before { background: radial-gradient(120% 90% at 100% 0%, var(--maybe-soft) 0%, transparent 60%); }
   #now > * { position: relative; }
-  .state { display: inline-flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 650; padding: 6px 13px 6px 10px; border-radius: 999px; background: var(--soft); }
-  .state i { width: 9px; height: 9px; border-radius: 50%; background: var(--muted); position: relative; }
-  .state i::after { content: ""; position: absolute; inset: -4px; border-radius: 50%; border: 2px solid currentColor; opacity: 0; animation: ping 2.4s ease-out infinite; }
-  @keyframes ping { 0% { transform: scale(.5); opacity: .5; } 80%, 100% { transform: scale(1.4); opacity: 0; } }
-  .state.on { background: var(--on-soft); color: var(--on-ink); } .state.on i { background: var(--on); }
-  .state.off { background: var(--off-soft); color: var(--off-ink); } .state.off i { background: var(--off); }
-  .state.maybe { background: var(--maybe-soft); color: var(--maybe-ink); } .state.maybe i { background: var(--maybe); }
-  .big { font: 700 60px/1 var(--num); letter-spacing: -.03em; margin: 20px 0 6px; font-variant-numeric: tabular-nums; }
-  .big small { font-size: 24px; font-weight: 600; letter-spacing: 0; margin: 0 10px 0 3px; color: var(--muted); }
-  .big.text { font-size: 34px; letter-spacing: -.01em; }
+  #now::before { content: ""; position: absolute; width: 220px; height: 220px; right: -70px; top: -90px; border-radius: 50%; opacity: .9; pointer-events: none; transition: background .4s; background: var(--soft); }
+  #now.on::before { background: var(--on-soft); } #now.off::before { background: var(--off-soft); } #now.maybe::before { background: var(--maybe-soft); }
+  .state { display: inline-flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 700; padding: 8px 15px 8px 9px; border-radius: 999px; background: var(--ink); color: var(--bg); }
+  .state i { width: 22px; height: 22px; border-radius: 50%; background: var(--muted); display: grid; place-items: center; }
+  .state i svg { width: 13px; height: 13px; stroke: #1D1D1B; }
+  .state.on i { background: var(--on); } .state.off i { background: var(--off); } .state.maybe i { background: var(--maybe); }
+  .big { font-weight: 800; font-size: 64px; line-height: 1; letter-spacing: -.045em; margin: 22px 0 6px; font-variant-numeric: tabular-nums; }
+  .big small { font-size: 22px; font-weight: 700; letter-spacing: -.01em; margin: 0 12px 0 4px; color: var(--muted); }
+  .big.text { font-size: 36px; letter-spacing: -.02em; }
   .lead { font-size: 15.5px; color: var(--muted); }
-  .lead b { color: var(--ink); font-weight: 650; }
+  .lead b { color: var(--ink); font-weight: 800; }
 
-  /* горизонтальна смуга */
-  .barwrap { position: relative; margin-top: 22px; }
-  .bar { position: relative; height: 26px; border-radius: 999px; background: var(--off-soft); overflow: hidden; }
-  .bar.on { background: var(--on-soft); } .bar.maybe { background: var(--maybe-soft); }
-  .bar .fill { position: absolute; inset: 0 auto 0 0; width: 0; border-radius: 999px; transition: width .8s cubic-bezier(.2,.8,.2,1);
-    background: linear-gradient(90deg, var(--off-2), var(--off)); }
-  .bar.on .fill { background: linear-gradient(90deg, var(--on-2), var(--on)); }
-  .bar.maybe .fill { background: var(--maybe); }
-  .bar .fill::after { content: ""; position: absolute; right: 5px; top: 50%; width: 10px; height: 10px; margin-top: -5px; border-radius: 50%; background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,.18); }
-  .bar .pct { position: absolute; right: 12px; top: 0; bottom: 0; display: flex; align-items: center; font: 600 12px var(--num); color: var(--muted); font-variant-numeric: tabular-nums; }
-  .bar-ends { display: flex; justify-content: space-between; font-size: 13px; margin-top: 9px; color: var(--muted); font-variant-numeric: tabular-nums; }
-  .bar-ends b { color: var(--ink); font-weight: 600; }
+  /* горизонтальна смуга: товста пігулка з чорним бігунком */
+  .barwrap { position: relative; margin-top: 24px; }
+  .bar { position: relative; height: 40px; border-radius: 999px; background: var(--soft); }
+  .bar .fill { position: absolute; inset: 0 auto 0 0; width: 0; min-width: 40px; border-radius: 999px; background: var(--off); transition: width .8s cubic-bezier(.2,.8,.2,1); }
+  .bar.on .fill { background: var(--on); } .bar.maybe .fill { background: repeating-linear-gradient(135deg, var(--on) 0 8px, var(--off) 8px 16px); }
+  .bar .fill::after { content: ""; position: absolute; right: 4px; top: 4px; width: 32px; height: 32px; border-radius: 50%; background: var(--ink); box-shadow: 0 0 0 3px var(--card); }
+  .bar .pct { position: absolute; right: 16px; top: 0; bottom: 0; display: flex; align-items: center; font-weight: 700; font-size: 13px; color: var(--muted); font-variant-numeric: tabular-nums; }
+  .bar-ends { display: flex; justify-content: space-between; font-size: 13px; margin-top: 10px; color: var(--muted); font-variant-numeric: tabular-nums; }
+  .bar-ends b { color: var(--ink); font-weight: 800; }
 
-  /* попередження ГАВ / СГАВ поверх смуги */
+  /* попередження ГАВ / СГАВ — рожева плашка поверх смуги */
   .alert {
-    position: absolute; left: -6px; right: -6px; top: 0; height: 42px; z-index: 3;
-    display: none; align-items: center; gap: 10px; padding: 0 14px 0 8px;
-    background: color-mix(in srgb, var(--warn-soft) 92%, transparent); color: var(--warn-ink);
-    border: 1px solid color-mix(in srgb, var(--warn) 28%, transparent); border-radius: 15px;
-    -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px);
-    font-size: 13.5px; text-decoration: none; box-shadow: 0 8px 20px -8px rgba(150,70,40,.35);
+    position: absolute; left: -8px; right: -8px; top: 0; height: 50px; z-index: 3;
+    display: none; align-items: center; gap: 10px; padding: 0 7px 0 8px;
+    background: var(--warn); color: var(--warn-ink); border-radius: 999px;
+    font-size: 14px; text-decoration: none; box-shadow: 0 10px 24px -10px rgba(160,60,110,.45);
   }
   .alert.show { display: flex; }
-  .alert .txt { flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .alert b { font-weight: 700; }
-  .alert .ic { flex: none; width: 27px; height: 27px; border-radius: 50%; background: var(--warn); color: #fff; display: grid; place-items: center; }
-  .alert .ic svg { width: 15px; height: 15px; }
-  .alert .tm { flex: none; font-size: 12px; opacity: .75; font-variant-numeric: tabular-nums; }
-  .barwrap.alerted { padding-top: 34px; }
+  .alert .txt { flex: 1; min-width: 0; line-height: 1.2; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .alert b { font-weight: 800; }
+  .alert .ic { flex: none; width: 34px; height: 34px; border-radius: 50%; background: var(--card); color: var(--accent); display: grid; place-items: center; }
+  .alert .ic svg { width: 17px; height: 17px; }
+  .alert .tm { flex: none; font-size: 12.5px; font-weight: 700; background: var(--ink); color: var(--bg); padding: 9px 13px; border-radius: 999px; font-variant-numeric: tabular-nums; }
+  .barwrap.alerted { padding-top: 40px; }
 
-  .next { display: flex; align-items: center; gap: 12px; margin-top: 18px; padding-top: 16px; border-top: 1px solid var(--line); font-size: 14px; }
-  .next .dot { flex: none; width: 34px; height: 34px; border-radius: 12px; display: grid; place-items: center; background: var(--soft); }
-  .next .dot svg { width: 17px; height: 17px; stroke: var(--muted); }
-  .next b { font-weight: 650; }
+  .next { display: flex; align-items: center; gap: 12px; margin-top: 18px; padding: 12px 14px; border-radius: 20px; background: var(--soft); font-size: 14px; }
+  .next .dot { flex: none; width: 36px; height: 36px; border-radius: 50%; display: grid; place-items: center; background: var(--olive); }
+  .next .dot svg { width: 18px; height: 18px; stroke: #1D1D1B; }
+  .next b { font-weight: 800; }
   .next:empty { display: none; }
 
   /* графік на день */
-  .dayhead { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; margin-bottom: 14px; }
-  .dayhead h2 { margin: 0; font: 700 19px var(--num); }
-  .dayhead .sub { font-size: 13px; color: var(--muted); }
-  .dayhead .total { font-size: 12.5px; font-weight: 600; padding: 4px 10px; border-radius: 999px; background: var(--off-soft); color: var(--off-ink); white-space: nowrap; }
-  .dayhead .total.zero { background: var(--on-soft); color: var(--on-ink); }
-  .day + .day { margin-top: 24px; padding-top: 22px; border-top: 1px solid var(--line); }
-  .track { position: relative; height: 34px; border-radius: 12px; background: var(--on-soft); overflow: hidden; }
-  .track .seg { position: absolute; top: 0; bottom: 0; }
-  .track .seg.o { background: var(--off); } .track .seg.m { background: var(--maybe); }
-  .track .grid { position: absolute; top: 0; bottom: 0; width: 1px; background: color-mix(in srgb, var(--card) 70%, transparent); }
-  .track .past { position: absolute; top: 0; bottom: 0; left: 0; background: color-mix(in srgb, var(--card) 55%, transparent); }
-  .track .nowline { position: absolute; top: 0; bottom: 0; width: 3px; margin-left: -1.5px; background: var(--ink); border-radius: 3px; }
-  .nowtag { position: absolute; top: -26px; transform: translateX(-50%); font: 600 11px var(--num); background: var(--ink); color: var(--bg); padding: 3px 7px; border-radius: 8px; white-space: nowrap; }
-  .trackwrap { position: relative; }
-  .trackwrap.has-now { margin-top: 30px; }
-  .ticks { position: relative; height: 16px; margin-top: 7px; font-size: 11px; color: var(--muted); font-variant-numeric: tabular-nums; }
+  .dayhead { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 16px; }
+  .dayhead h2 { margin: 0; font-weight: 800; font-size: 22px; letter-spacing: -.02em; }
+  .dayhead .sub { white-space: nowrap; font-size: 13px; color: var(--muted); }
+  .dayhead .total { font-size: 13px; font-weight: 700; padding: 8px 13px; border-radius: 999px; background: var(--ink); color: var(--bg); white-space: nowrap; }
+  .dayhead .total.zero { background: var(--on); color: #1D1D1B; }
+  .day + .day { margin-top: 26px; padding-top: 24px; border-top: 1.5px dashed var(--line); }
+
+  /* огляд доби: окремі «пігулки» для кожного періоду */
+  .lane { position: relative; display: flex; gap: 4px; height: 46px; }
+  .lane.has-now { margin-top: 30px; }
+  .lane .p { position: relative; min-width: 8px; border-radius: 14px; display: grid; place-items: center; background: var(--on); }
+  .lane .p.off { background: var(--off); }
+  .lane .p.maybe { background: repeating-linear-gradient(135deg, var(--on) 0 5px, var(--off) 5px 10px); }
+  .lane .p svg { width: 18px; height: 18px; stroke: #1D1D1B; opacity: .75; }
+  .lane .p.past { opacity: .38; }
+  .lane .p .done { position: absolute; inset: 0 auto 0 0; border-radius: 14px 0 0 14px; background: repeating-linear-gradient(-45deg, rgba(255,255,255,.55) 0 4px, transparent 4px 8px); }
+  .lane .now { position: absolute; top: -6px; bottom: -6px; width: 4px; margin-left: -2px; border-radius: 4px; background: var(--ink); box-shadow: 0 0 0 2px var(--card); z-index: 2; }
+  .lane .nowtag { position: absolute; top: -30px; transform: translateX(-50%); font-weight: 800; font-size: 11.5px; background: var(--ink); color: var(--bg); padding: 4px 9px; border-radius: 999px; white-space: nowrap; z-index: 2; }
+  .ticks { position: relative; height: 16px; margin-top: 8px; font-size: 11px; font-weight: 600; color: var(--muted); font-variant-numeric: tabular-nums; }
   .ticks span { position: absolute; transform: translateX(-50%); } .ticks span:first-child { transform: none; } .ticks span:last-child { transform: translateX(-100%); }
-  .ints { list-style: none; padding: 0; margin: 14px 0 0; display: flex; flex-wrap: wrap; gap: 7px; }
-  .ints li { display: inline-flex; align-items: center; gap: 7px; font-size: 13.5px; padding: 6px 11px; border-radius: 11px; background: var(--off-soft); color: var(--off-ink); font-variant-numeric: tabular-nums; font-weight: 550; }
-  .ints li::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: var(--off); }
-  .ints li.m { background: var(--maybe-soft); color: var(--maybe-ink); } .ints li.m::before { background: var(--maybe); }
-  .ints li.none { background: var(--on-soft); color: var(--on-ink); } .ints li.none::before { background: var(--on); }
-  .ints li.done { opacity: .45; text-decoration: line-through; text-decoration-thickness: 1px; }
-  .legend { display: flex; gap: 16px; font-size: 12px; color: var(--muted); margin: 4px 6px 0; }
-  .legend span::before { content: ""; display: inline-block; width: 9px; height: 9px; border-radius: 3px; margin-right: 6px; background: var(--on-soft); box-shadow: inset 0 0 0 1px var(--on); }
-  .legend .o::before { background: var(--off); box-shadow: none; } .legend .m::before { background: var(--maybe); box-shadow: none; }
+
+  /* розклад рядками */
+  .agenda { list-style: none; padding: 0; margin: 16px 0 0; display: flex; flex-direction: column; gap: 6px; }
+  .agenda li { display: grid; grid-template-columns: 40px 1fr auto; align-items: center; gap: 12px; padding: 8px 14px 8px 8px; border-radius: 20px; background: var(--soft); }
+  .agenda .ico { width: 40px; height: 40px; border-radius: 50%; display: grid; place-items: center; background: var(--on); }
+  .agenda .ico svg { width: 19px; height: 19px; stroke: #1D1D1B; }
+  .agenda li.off .ico { background: var(--off); }
+  .agenda li.maybe .ico, .state.maybe i { background: linear-gradient(135deg, var(--on) 0 50%, var(--off) 50% 100%); }
+  .agenda .when { font-weight: 800; font-size: 15px; font-variant-numeric: tabular-nums; letter-spacing: -.01em; }
+  .agenda .what { font-size: 12.5px; color: var(--muted); font-weight: 600; }
+  .agenda .len { font-size: 13px; font-weight: 700; color: var(--muted); font-variant-numeric: tabular-nums; }
+  .agenda li.past { opacity: .45; }
+  .agenda li.past .when { text-decoration: line-through; text-decoration-thickness: 1.5px; }
+  .agenda li.cur { background: var(--ink); color: var(--bg); }
+  .agenda li.cur .what, .agenda li.cur .len { color: color-mix(in srgb, var(--bg) 70%, transparent); }
+  .agenda .prog { grid-column: 2 / 4; height: 6px; border-radius: 6px; background: rgba(255,255,255,.18); overflow: hidden; margin: 2px 0 4px; }
+  .agenda .prog i { display: block; height: 100%; border-radius: 6px; background: var(--on); }
+  .agenda li.off .prog i { background: var(--off); } .agenda li.maybe .prog i { background: linear-gradient(90deg, var(--on), var(--off)); }
+  .agenda li.pastsum { display: block; padding: 0; background: none; }
+  .agenda li.pastsum summary { list-style: none; cursor: pointer; padding: 11px 16px; border-radius: 999px; border: 1.5px dashed var(--line); font-size: 13.5px; font-weight: 700; color: var(--muted); }
+  .agenda li.pastsum summary::-webkit-details-marker { display: none; }
+  .agenda li.pastsum summary::after { content: " ›"; } .agenda li.pastsum details[open] summary::after { content: " ⌄"; }
+  .agenda li.pastsum .agenda { margin-top: 6px; }
+  .legend { display: flex; gap: 16px; font-size: 12.5px; font-weight: 600; color: var(--muted); margin: 4px 8px 0; }
+  .legend span::before { content: ""; display: inline-block; width: 11px; height: 11px; border-radius: 50%; margin-right: 6px; vertical-align: -1px; background: var(--on); }
+  .legend .o::before { background: var(--off); } .legend .m::before { background: linear-gradient(135deg, var(--on) 0 50%, var(--off) 50% 100%); }
 
   footer { font-size: 12px; text-align: center; margin-top: 22px; line-height: 1.7; color: var(--muted); }
   footer a { color: inherit; }
-  .stale { color: var(--warn-ink); font-weight: 600; }
+  .stale { color: var(--accent); font-weight: 700; }
   .empty { text-align: center; padding: 26px 10px; color: var(--muted); }
   .empty .em { font-size: 30px; display: block; margin-bottom: 6px; }
 
   /* налаштування адреси */
-  dialog { border: 0; padding: 0; width: min(520px, 100%); max-height: 94vh; margin: auto auto 0; border-radius: 28px 28px 0 0; background: var(--card); color: var(--ink); }
+  dialog { border: 0; padding: 0; width: min(520px, 100%); max-height: 94vh; margin: auto auto 0; border-radius: 32px 32px 0 0; background: var(--card); color: var(--ink); }
   dialog[open] { animation: up .3s cubic-bezier(.2,.8,.2,1); }
   @keyframes up { from { transform: translateY(40px); opacity: .4; } to { transform: none; opacity: 1; } }
-  @media (min-width: 560px) { dialog { margin: auto; border-radius: 28px; } }
-  dialog::backdrop { background: rgba(25,25,28,.35); -webkit-backdrop-filter: blur(3px); backdrop-filter: blur(3px); }
+  @media (min-width: 560px) { dialog { margin: auto; border-radius: 32px; } }
+  dialog::backdrop { background: rgba(30,28,22,.35); -webkit-backdrop-filter: blur(3px); backdrop-filter: blur(3px); }
   .sheet { padding: 10px 20px max(22px, env(safe-area-inset-bottom)); }
-  .grab { width: 38px; height: 5px; border-radius: 3px; background: var(--line); margin: 0 auto 14px; }
-  .sheet h3 { margin: 0 0 4px; font: 700 23px var(--num); }
-  label.f { display: block; font-size: 12px; letter-spacing: .06em; text-transform: uppercase; font-weight: 650; color: var(--muted); margin: 20px 0 8px; }
+  .grab { width: 40px; height: 5px; border-radius: 3px; background: var(--line); margin: 0 auto 14px; }
+  .sheet h3 { margin: 0 0 4px; font-weight: 800; font-size: 26px; letter-spacing: -.02em; }
+  label.f { display: block; font-size: 13px; font-weight: 700; color: var(--muted); margin: 20px 0 8px; }
   .inp { position: relative; }
-  .inp svg { position: absolute; left: 14px; top: 15px; width: 18px; height: 18px; stroke: var(--muted); }
-  input[type=text] { width: 100%; border: 1.5px solid var(--line); background: var(--soft); color: var(--ink); border-radius: 16px; padding: 14px 14px 14px 42px; font: inherit; font-size: 16px; outline: none; transition: border-color .2s; }
-  input[type=text]:focus { border-color: var(--off-2); }
-  .hint { font-size: 12.5px; margin-top: 8px; color: var(--muted); }
+  .inp svg { position: absolute; left: 16px; top: 16px; width: 18px; height: 18px; stroke: var(--muted); }
+  input[type=text] { width: 100%; border: 2px solid transparent; background: var(--soft); color: var(--ink); border-radius: 999px; padding: 14px 16px 14px 44px; font: inherit; font-size: 16px; outline: none; transition: border-color .2s; }
+  input[type=text]:focus { border-color: var(--ink); }
+  .hint { font-size: 12.5px; margin: 8px 6px 0; color: var(--muted); }
   .results { list-style: none; margin: 12px 0 0; padding: 0; display: flex; flex-direction: column; gap: 8px; max-height: 38vh; overflow-y: auto; }
-  .results li { display: flex; gap: 12px; align-items: flex-start; padding: 12px; border-radius: 16px; background: var(--soft); cursor: pointer; border: 1.5px solid transparent; transition: border-color .15s; }
-  .results li.sel { border-color: var(--off); background: var(--off-soft); }
-  .results .qb { flex: none; min-width: 46px; text-align: center; font: 700 17px var(--num); padding: 7px 0; border-radius: 11px; background: var(--card); }
-  .results .qb small { display: block; font-size: 10px; font-weight: 600; color: var(--muted); }
+  .results li { display: flex; gap: 12px; align-items: flex-start; padding: 12px; border-radius: 22px; background: var(--soft); cursor: pointer; border: 2px solid transparent; transition: border-color .15s; }
+  .results li.sel { border-color: var(--ink); }
+  .results .qb { flex: none; min-width: 50px; text-align: center; font-weight: 800; font-size: 17px; padding: 8px 0; border-radius: 16px; background: var(--off); color: #1D1D1B; }
+  .results .qb small { display: block; font-size: 10px; font-weight: 700; opacity: .7; }
   .results .sn { font-size: 13px; line-height: 1.4; color: var(--muted); }
-  .results .sn mark { background: var(--maybe-soft); color: var(--ink); border-radius: 4px; padding: 0 1px; margin: 0 -1px; font-weight: 600; }
-  .results .tag { display: inline-block; font-size: 11px; font-weight: 650; padding: 2px 7px; border-radius: 6px; margin-bottom: 4px; background: var(--on-soft); color: var(--on-ink); }
+  .results .sn mark { background: var(--on); color: #1D1D1B; border-radius: 5px; padding: 0 2px; margin: 0 -1px; font-weight: 700; }
+  .results .tag { display: inline-block; font-size: 11px; font-weight: 700; padding: 3px 9px; border-radius: 999px; margin-bottom: 4px; background: var(--olive-soft); color: var(--ink); }
   .results .tag.w { background: var(--maybe-soft); color: var(--maybe-ink); }
-  .found { display: none; align-items: center; gap: 10px; margin-top: 12px; padding: 12px 14px; border-radius: 16px; background: var(--on-soft); color: var(--on-ink); font-size: 14px; }
+  .found { display: none; align-items: center; gap: 12px; margin-top: 12px; padding: 10px 16px 10px 10px; border-radius: 999px; background: var(--on); color: #1D1D1B; font-size: 14px; font-weight: 600; }
   .found.show { display: flex; }
-  .found b { font: 700 18px var(--num); }
+  .found > span:first-child { width: 34px; height: 34px; border-radius: 50%; background: var(--ink); color: var(--on); display: grid; place-items: center; font-weight: 800; }
+  .found b { font-weight: 800; font-size: 18px; }
   details.manual { margin-top: 16px; }
-  details.manual summary { font-size: 13.5px; color: var(--muted); cursor: pointer; list-style: none; }
+  details.manual summary { font-size: 14px; font-weight: 600; color: var(--muted); cursor: pointer; list-style: none; }
   details.manual summary::-webkit-details-marker { display: none; }
   details.manual summary::after { content: " ›"; }
   details[open].manual summary::after { content: " ⌄"; }
   .qgrid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-top: 12px; }
-  .qgrid button { border: 0; background: var(--soft); border-radius: 13px; padding: 12px 0; font: 650 16px var(--num); cursor: pointer; font-variant-numeric: tabular-nums; }
-  .qgrid button.sel { background: var(--off); color: #fff; }
+  .qgrid button { border: 0; background: var(--soft); border-radius: 999px; padding: 12px 0; font-weight: 800; font-size: 16px; cursor: pointer; font-variant-numeric: tabular-nums; }
+  .qgrid button.sel { background: var(--ink); color: var(--bg); }
   .actions { display: flex; gap: 10px; margin-top: 22px; }
-  .primary, .secondary { flex: 1; border: 0; border-radius: 16px; padding: 15px; font-weight: 650; cursor: pointer; }
+  .primary, .secondary { flex: 1; border: 0; border-radius: 999px; padding: 16px; font-weight: 800; cursor: pointer; }
   .primary { background: var(--ink); color: var(--bg); }
-  .primary:disabled { opacity: .35; }
+  .primary:disabled { opacity: .3; }
   .secondary { background: var(--soft); }
-  .danger { display: block; margin: 16px auto 0; background: none; border: 0; color: var(--warn-ink); font-size: 13px; cursor: pointer; }
+  .danger { display: block; margin: 16px auto 0; background: none; border: 0; color: var(--accent); font-size: 13px; font-weight: 600; cursor: pointer; }
 </style>
 </head>
 <body>
@@ -217,15 +233,15 @@
 <div class="place-row" id="places"></div>
 
 <section class="card" id="now">
-  <span class="state" id="state"><i></i><span id="stateText">…</span></span>
+  <span class="state" id="state"><i id="stateIco"></i><span id="stateText">…</span></span>
   <div class="big" id="big">—</div>
   <div class="lead" id="lead">Завантаження графіка…</div>
   <div class="barwrap" id="barwrap">
-    <div class="bar" id="bar"><div class="fill" id="fill"></div><span class="pct" id="pct"></span></div>
+    <div class="bar" id="bar"><div class="fill" id="fill"></div></div>
     <div class="bar-ends"><span id="barFrom"></span><span id="barTo"></span></div>
     <a class="alert" id="alert" target="_blank" rel="noopener">
       <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M12 7v6"/><path d="M12 17h.01"/></svg></span>
-      <span class="txt"><b id="alertTitle">Діють ГАВ</b> · <span>ГПВ може не діяти</span></span>
+      <span class="txt"><b id="alertTitle">Діють ГАВ</b><br><span style="font-size:12.5px">графік може не діяти</span></span>
       <span class="tm" id="alertTime"></span>
     </a>
   </div>
@@ -265,7 +281,7 @@
   </form>
 </dialog>
 
-<script src="search.js?v=5"></script>
+<script src="search.js?v=6"></script>
 <script>
 "use strict";
 const QUEUES = ["1.1","1.2","2.1","2.2","3.1","3.2","4.1","4.2","5.1","5.2","6.1","6.2"];
@@ -335,8 +351,18 @@ function segments(queue) {
 }
 
 /* ---------- головна картка ---------- */
+// Іконки: лампочка (світло є), перекреслена блискавка (немає),
+// «можливо» — діагональні половинки цих двох знаків
+const BULB = '<path d="M9 18h6"/><path d="M10 21h4"/><path d="M12 3a6 6 0 0 0-3.5 10.9c.6.5 1 1.2 1 2.1h5c0-.9.4-1.6 1-2.1A6 6 0 0 0 12 3z"/>';
+const ZAPOFF = '<path d="M12.4 6.7 13 2l-2.4 2.9"/><path d="M18.6 12.9 21 10h-5.3"/><path d="M8 8l-5 6h9l-1 8 5-6"/><path d="M3 3l18 18"/>';
+const SVG = (inner) => `<svg viewBox="0 0 24 24" fill="none" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">${inner}</svg>`;
+const ICO = {
+  on: SVG(BULB),
+  off: SVG(ZAPOFF),
+  maybe: SVG(`<g transform="translate(0.5 0.5) scale(.52)" stroke-width="3.6">${BULB}</g><g transform="translate(11 11) scale(.52)" stroke-width="3.6">${ZAPOFF}</g><path d="M21.5 2.5 2.5 21.5" stroke-width="1.4" opacity=".55"/>`),
+};
 const STATE = { on: "Світло є", off: "Світла немає", maybe: "Можливе вимкнення" };
-const ICON_CLOCK = '<svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/></svg>';
+const ICON_CLOCK = '<svg viewBox="0 0 24 24" fill="none" stroke-width="2.2" stroke-linecap="round"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/></svg>';
 function renderNow(place) {
   const now = new Date(), segs = segments(place.queue);
   const i = segs.findIndex((s) => s.start <= now && now < s.end);
@@ -345,13 +371,13 @@ function renderNow(place) {
     card.className = "card"; $("state").className = "state"; $("stateText").textContent = "Немає даних";
     $("big").className = "big text"; $("big").textContent = schedule ? "Графік очікується" : "Немає зв'язку";
     $("lead").textContent = schedule ? "Обленерго ще не опублікувало графік на сьогодні" : "Не вдалося завантажити графік";
-    bar.className = "bar"; $("fill").style.width = "0"; $("pct").textContent = "";
+    bar.className = "bar"; $("fill").style.width = "0";
     $("barFrom").textContent = $("barTo").textContent = ""; $("next").innerHTML = "";
     return;
   }
   const cur = segs[i], next = segs[i + 1], lastOn = cur.v === "on" && !next;
   card.className = "card " + cur.v;
-  $("state").className = "state " + cur.v; $("stateText").textContent = STATE[cur.v];
+  $("state").className = "state " + cur.v; $("stateText").textContent = STATE[cur.v]; $("stateIco").innerHTML = ICO[cur.v];
   if (lastOn) {
     $("big").className = "big text"; $("big").textContent = "Без відключень";
     $("lead").textContent = "За графіком до кінця опублікованих даних";
@@ -366,7 +392,7 @@ function renderNow(place) {
   const p = Math.min(1, Math.max(0, (now - cur.start) / (cur.end - cur.start)));
   bar.className = "bar " + cur.v;
   $("fill").style.width = Math.max(7, p * 100).toFixed(2) + "%";
-  $("pct").textContent = lastOn ? "" : Math.round(p * 100) + "%";
+  
   $("barFrom").innerHTML = `${cur.v === "off" ? "вимкнули" : cur.v === "on" ? "світло з" : "з"} <b>${hm(cur.start)}</b>`;
   $("barTo").innerHTML = lastOn ? "" : `${cur.v === "off" ? "ввімкнуть" : "вимкнуть"} <b>${hm(cur.end)}</b>`;
 
@@ -389,7 +415,7 @@ function renderAlert() {
   $("barwrap").classList.toggle("alerted", on);
   if (!on) return;
   $("alertTitle").textContent = e.type === "СГАВ" ? "Діють СГАВ" : "Діють ГАВ";
-  $("alertTime").textContent = e.postedAt ? hm(new Date(e.postedAt)) + " ›" : "›";
+  $("alertTime").textContent = "Деталі ›";
   $("alert").href = e.link || "https://t.me/poltavaOE";
   $("alert").title = e.text || "";
 }
@@ -400,30 +426,39 @@ function renderDays(place) {
   const today = new Date(); today.setHours(0, 0, 0, 0);
   const shown = (schedule?.days || []).filter((d) => d.slots[place.queue] && slotStart(d.date, 48) > today).slice(0, 2);
   if (!shown.length) { box.innerHTML = `<div class="empty"><span class="em">🗓</span>Графік ще не опубліковано</div>`; return; }
+  const WHAT = { on: "світло є", off: "без світла", maybe: "можливе вимкнення" };
   box.innerHTML = shown.map((d) => {
     const s = d.slots[place.queue], [title, sub] = dayLabel(d.date);
-    const ds = slotStart(d.date, 0), de = slotStart(d.date, 48), span = de - ds;
-    const pos = (t) => ((t - ds) / span * 100).toFixed(3) + "%";
-    let segs = "", ints = [], offMin = 0;
+    // періоди доби (і зі світлом, і без)
+    const runs = [];
     for (let i = 0; i < 48;) {
-      if (s[i] === "1") { i++; continue; }
       const k = s[i]; let j = i; while (j < 48 && s[j] === k) j++;
-      const a = slotStart(d.date, i), b = slotStart(d.date, j);
-      segs += `<div class="seg ${k === "?" ? "m" : "o"}" style="left:${pos(a)};width:calc(${pos(b)} - ${pos(a)})"></div>`;
-      if (k === "0") offMin += (b - a) / 60000;
-      ints.push(`<li class="${k === "?" ? "m" : ""} ${b <= now ? "done" : ""}">${hm(a)} – ${j === 48 ? "24:00" : hm(b)}${k === "?" ? " · можливо" : ""}</li>`);
+      runs.push({ v: k === "0" ? "off" : k === "?" ? "maybe" : "on", a: slotStart(d.date, i), b: slotStart(d.date, j), n: j - i, end24: j === 48 });
       i = j;
     }
-    const grid = [6, 12, 18].map((h) => `<div class="grid" style="left:${(h / 24 * 100)}%"></div>`).join("");
-    const isToday = now >= ds && now < de;
-    const nowEls = isToday ? `<div class="past" style="width:${pos(now)}"></div><div class="nowline" style="left:${pos(now)}"></div>` : "";
-    const tag = isToday ? `<span class="nowtag" style="left:clamp(22px, ${pos(now)}, calc(100% - 22px))">${hm(now)}</span>` : "";
+    const offMin = runs.filter((r) => r.v === "off").reduce((t, r) => t + (r.b - r.a) / 60000, 0);
+    const isToday = runs.some((r) => r.a <= now && now < r.b);
+    let lane = "";
+    for (const r of runs) {
+      const past = r.b <= now, cur = r.a <= now && now < r.b;
+      const p = cur ? (now - r.a) / (r.b - r.a) * 100 : 0;
+      lane += `<div class="p ${r.v} ${past ? "past" : ""}" style="flex:${r.n} 1 0">${cur ? `<span class="done" style="width:${p.toFixed(1)}%"></span><span class="now" style="left:${p.toFixed(1)}%"></span><span class="nowtag" style="left:${p.toFixed(1)}%">${hm(now)}</span>` : ""}${r.n >= 5 ? ICO[r.v] : ""}</div>`;
+    }
+    const rowOf = (r) => {
+      const past = r.b <= now, cur = r.a <= now && now < r.b;
+      const prog = cur ? `<span class="prog"><i style="width:${((now - r.a) / (r.b - r.a) * 100).toFixed(1)}%"></i></span>` : "";
+      const label = cur ? (r.v === "off" ? `зараз без світла · ще ${durText(r.b - now)}` : r.v === "on" ? `зараз світло є · ще ${durText(r.b - now)}` : `зараз · ще ${durText(r.b - now)}`) : WHAT[r.v];
+      return `<li class="${r.v} ${past ? "past" : ""} ${cur ? "cur" : ""}"><span class="ico">${ICO[r.v]}</span><span><div class="when">${hm(r.a)} – ${r.end24 ? "24:00" : hm(r.b)}</div><div class="what">${label}</div></span><span class="len">${durText(r.b - r.a)}</span>${prog}</li>`;
+    };
+    // те, що вже минуло, згортаємо в один рядок
+    const pastRuns = runs.filter((r) => r.b <= now), rest = runs.filter((r) => r.b > now);
+    const rows = (pastRuns.length ? `<li class="pastsum"><details><summary>Уже минуло · ${pastRuns.length} ${pastRuns.length < 5 ? "періоди" : "періодів"}</summary><ul class="agenda">${pastRuns.map(rowOf).join("")}</ul></details></li>` : "") + rest.map(rowOf).join("");
     const total = offMin ? `без світла ${durText(offMin * 60000)}` : "без відключень";
     return `<div class="day">
       <div class="dayhead"><div><h2>${title}</h2><div class="sub">${sub}</div></div><span class="total ${offMin ? "" : "zero"}">${total}</span></div>
-      <div class="trackwrap ${isToday ? "has-now" : ""}">${tag}<div class="track">${segs}${grid}${nowEls}</div></div>
+      <div class="lane ${isToday ? "has-now" : ""}">${lane}</div>
       <div class="ticks"><span style="left:0">00</span><span style="left:25%">06</span><span style="left:50%">12</span><span style="left:75%">18</span><span style="left:100%">24</span></div>
-      <ul class="ints">${ints.join("") || `<li class="none">Відключень не заплановано</li>`}</ul>
+      <ul class="agenda">${rows}</ul>
     </div>`;
   }).join("");
 }

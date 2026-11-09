@@ -12,16 +12,16 @@ const BASE_URL = "https://reidris08.github.io/svitlo/";
 
 // ---------- кольори (спокійні, однакові з застосунком) ----------
 const C = {
-  bg: Color.dynamic(new Color("#F4F1EC"), new Color("#17191C")),
-  ink: Color.dynamic(new Color("#2B3035"), new Color("#EDEAE5")),
-  muted: Color.dynamic(new Color("#848A90"), new Color("#979DA4")),
-  on: new Color("#8FB894"),
-  off: new Color("#6A7DA0"),
-  maybe: new Color("#D7B676"),
-  track: new Color("#8A93A0", 0.2),
-  warn: new Color("#C9785B"),
-  warnBg: new Color("#FBEAE2"),
-  warnInk: new Color("#8E4831"),
+  // палітра «пастельний трекер»: кремовий, масляно-жовтий, блакитний; чорні акценти
+  bg: Color.dynamic(new Color("#F7F1E5"), new Color("#171613")),
+  ink: Color.dynamic(new Color("#1D1D1B"), new Color("#F5F0E6")),
+  muted: Color.dynamic(new Color("#8C8679"), new Color("#A39C8E")),
+  on: new Color("#F2D872"),
+  off: new Color("#A9C2EA"),
+  maybe: new Color("#F4B6D6"),
+  track: new Color("#B8AE98", 0.28),
+  warnBg: new Color("#F6BCD9"),
+  warnInk: new Color("#3A1328"),
 };
 const COLOR = { on: C.on, off: C.off, maybe: C.maybe };
 const LABEL = { on: "Світло є", off: "Світла немає", maybe: "Можливе вимкнення" };
@@ -138,7 +138,12 @@ async function build() {
 
   // верхній рядок
   const head = w.addStack(); head.centerAlignContent();
-  const dot = head.addText("● "); dot.font = Font.systemFont(10); dot.textColor = COLOR[cur.v];
+  const SYM = { on: "lightbulb.fill", off: "bolt.slash.fill", maybe: "bolt.badge.clock.fill" };
+  const badge = head.addStack(); badge.size = new Size(22, 22); badge.cornerRadius = 11; badge.centerAlignContent();
+  badge.backgroundColor = COLOR[cur.v];
+  const sym = SFSymbol.named(SYM[cur.v]) || SFSymbol.named("bolt.fill"); sym.applyBoldWeight();
+  const si = badge.addImage(sym.image); si.imageSize = new Size(12, 12); si.tintColor = new Color("#1D1D1B");
+  head.addSpacer(6);
   const st = head.addText(LABEL[cur.v]); st.font = Font.semiboldSystemFont(13); st.textColor = C.ink; st.lineLimit = 1;
   head.addSpacer();
   const q = head.addText(queue); q.font = Font.mediumSystemFont(12); q.textColor = C.muted;
