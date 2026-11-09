@@ -8,7 +8,7 @@
 // 2) Запустіть скрипт у Scriptable і оберіть свою чергу — вона збережеться.
 //    Або впишіть чергу в поле «Parameter» віджета, напр. 3.2
 
-const BASE_URL = "https://ВАШ-ЛОГІН.github.io/svitlo/";
+const BASE_URL = "https://reidris08.github.io/svitlo/";
 
 // ---------- кольори (спокійні, однакові з застосунком) ----------
 const C = {
