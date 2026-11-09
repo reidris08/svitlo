@@ -97,7 +97,7 @@ async function build() {
   const queue = getQueue();
   const w = new ListWidget();
   const lock = family.startsWith("accessory");
-  if (!lock) { w.backgroundColor = C.bg; w.setPadding(14, 16, 14, 16); }
+  if (!lock) { w.backgroundColor = C.bg; w.setPadding(14, 14, 14, 14); }
   w.url = BASE_URL;
 
   if (!queue) {
@@ -136,46 +136,63 @@ async function build() {
     return w;
   }
 
-  // верхній рядок
-  const head = w.addStack(); head.centerAlignContent();
+  // Точна ширина віджета для кожного розміру екрана iPhone (у точках),
+  // щоб вміст не був ширшим за віджет і iOS його не обрізала
+  const sw = Device.screenSize().width, sh = Device.screenSize().height;
+  const SIZES = [  // [ширина екрана, малий, середній]
+    [430, 170, 364], [428, 170, 364], [414, 169, 360], [393, 158, 338], [390, 158, 338],
+    [375, 155, 329], [360, 155, 329], [320, 141, 292],
+  ];
+  const row = SIZES.find(([x]) => Math.abs(x - Math.min(sw, sh)) < 2) || SIZES.find(([x]) => x <= Math.min(sw, sh)) || SIZES[SIZES.length - 1];
+  const PAD = 14;
+  const fullW = family === "small" ? row[1] : row[2];
+  const innerW = Math.floor(fullW - PAD * 2);
+  w.setPadding(PAD, PAD, PAD, PAD);
+
+  const main = w.addStack(); main.layoutVertically(); main.size = new Size(innerW, 0);
+
+  // верхній рядок: значок, стан, черга
+  const head = main.addStack(); head.centerAlignContent(); head.size = new Size(innerW, 0);
   const SYM = { on: "lightbulb.fill", off: "bolt.slash.fill", maybe: "bolt.badge.clock.fill" };
   const badge = head.addStack(); badge.size = new Size(22, 22); badge.cornerRadius = 11; badge.centerAlignContent();
   badge.backgroundColor = COLOR[cur.v];
   const sym = SFSymbol.named(SYM[cur.v]) || SFSymbol.named("bolt.fill"); sym.applyBoldWeight();
   const si = badge.addImage(sym.image); si.imageSize = new Size(12, 12); si.tintColor = new Color("#1D1D1B");
   head.addSpacer(6);
-  const st = head.addText(LABEL[cur.v]); st.font = Font.semiboldSystemFont(13); st.textColor = C.ink; st.lineLimit = 1;
+  const st = head.addText(LABEL[cur.v]); st.font = Font.semiboldSystemFont(13); st.textColor = C.ink; st.lineLimit = 1; st.minimumScaleFactor = 0.8;
   head.addSpacer();
-  const q = head.addText(queue); q.font = Font.mediumSystemFont(12); q.textColor = C.muted;
+  const q = head.addText(queue); q.font = Font.semiboldSystemFont(12); q.textColor = C.muted;
 
-  w.addSpacer();
+  main.addSpacer();
 
-  // відлік
+  // відлік (таймер у власному рядку, вирівняний ліворуч)
+  const tRow = main.addStack(); tRow.size = new Size(innerW, 0);
   if (lastOn) {
-    const t = w.addText("Без відключень"); t.font = Font.boldRoundedSystemFont(family === "small" ? 20 : 24); t.textColor = C.ink;
+    const t = tRow.addText("Без відключень"); t.font = Font.boldRoundedSystemFont(family === "small" ? 20 : 24); t.textColor = C.ink; t.lineLimit = 1; t.minimumScaleFactor = 0.7;
   } else {
-    const d = w.addDate(cur.end); d.applyTimerStyle();
-    d.font = Font.boldRoundedSystemFont(family === "small" ? 28 : 36); d.textColor = C.ink; d.minimumScaleFactor = 0.6;
+    const d = tRow.addDate(cur.end); d.applyTimerStyle(); d.leftAlignText();
+    d.font = Font.boldRoundedSystemFont(family === "small" ? 28 : 34); d.textColor = C.ink; d.lineLimit = 1; d.minimumScaleFactor = 0.6;
   }
-  const sub = w.addText(lastOn ? "за графіком" : `${what} · о ${hm(cur.end)}`);
-  sub.font = Font.systemFont(12); sub.textColor = C.muted; sub.lineLimit = 1;
+  tRow.addSpacer();
+  const sRow = main.addStack(); sRow.size = new Size(innerW, 0);
+  const sub = sRow.addText(lastOn ? "за графіком" : `${what} · о ${hm(cur.end)}`);
+  sub.font = Font.systemFont(12); sub.textColor = C.muted; sub.lineLimit = 1; sub.minimumScaleFactor = 0.8;
+  sRow.addSpacer();
 
-  w.addSpacer(8);
-  const bw = family === "small" ? 130 : 300;
-  const img = w.addImage(barImage(bw, cur, now, em, false));
-  img.imageSize = new Size(bw, em ? 31 : 12);
-  img.resizable = false;
+  main.addSpacer(8);
+  const img = main.addImage(barImage(innerW, cur, now, em, false));
+  img.imageSize = new Size(innerW, em ? 31 : 12);
 
   if (family !== "small") {
-    w.addSpacer(5);
-    const ends = w.addStack();
+    main.addSpacer(5);
+    const ends = main.addStack(); ends.size = new Size(innerW, 0);
     const a = ends.addText(`з ${hm(cur.start)}`); a.font = Font.systemFont(11); a.textColor = C.muted;
     ends.addSpacer();
     // наступне відключення
     const nextOff = segs.slice(i + 1).find((s) => s.v !== "on");
     const txt = cur.v === "on" ? (nextOff ? `далі без світла ${hm(nextOff.start)}–${hm(nextOff.end)}` : "")
                                : `до ${hm(cur.end)}`;
-    const b = ends.addText(txt); b.font = Font.systemFont(11); b.textColor = C.muted;
+    const b = ends.addText(txt); b.font = Font.systemFont(11); b.textColor = C.muted; b.lineLimit = 1; b.minimumScaleFactor = 0.8;
   }
   return w;
 }
