@@ -250,7 +250,7 @@
     <div class="bar-ends"><span id="barFrom"></span><span id="barTo"></span></div>
     <a class="alert" id="alert" target="_blank" rel="noopener">
       <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M12 7v6"/><path d="M12 17h.01"/></svg></span>
-      <span class="txt"><b id="alertTitle">Діють ГАВ</b><br><span style="font-size:12.5px">графік може не діяти</span></span>
+      <span class="txt"><b id="alertTitle">Діють ГАВ</b><br><span style="font-size:12.5px" id="alertSub">графік може не діяти</span></span>
       <span class="tm" id="alertTime"></span>
     </a>
   </div>
@@ -290,8 +290,9 @@
   </form>
 </dialog>
 
-<script src="poe.js?v=10"></script>
-<script src="search.js?v=10"></script>
+<script src="poe.js?v=11"></script>
+<script src="gav.js?v=11"></script>
+<script src="search.js?v=11"></script>
 <script>
 "use strict";
 const QUEUES = ["1.1","1.2","2.1","2.2","3.1","3.2","4.1","4.2","5.1","5.2","6.1","6.2"];
@@ -423,15 +424,35 @@ function renderNow(place) {
   $("next").innerHTML = nx ? `<span class="dot">${ICON_CLOCK}</span><span>${nx}</span>` : "";
 }
 
+// Стан ГАВ: точний — із Telegram (GitHub перевіряє канал; буває із запізненням),
+// миттєвий — із сайту обленерго (там видно лише, що ГАВ оголошено сьогодні, без скасувань).
+function currentEmergency() {
+  const tg = status?.emergency, checked = status?.checkedAt ? new Date(status.checkedAt) : null;
+  const now = new Date(), stale = !checked || now - checked > 45 * 60e3;
+  // новий ГАВ на сайті обленерго, оголошений уже після останньої перевірки Telegram
+  const poeNew = (unloading || []).filter((e) => /С?ГАВ/.test(e.unloadingtypename || "")).map((e) => {
+    const [d, mo, y] = e.unloaddata.split("-").map(Number);
+    const [cd, ct] = (e.createddate || "").split(" "); const [c1, c2, c3] = (cd || "").split("-").map(Number); const [h, m] = (ct || "0:0").split(":").map(Number);
+    return { type: /СГАВ/.test(e.unloadingtypename) ? "СГАВ" : "ГАВ",
+      from: new Date(y, mo - 1, d, e.beginhour, e.beginminute), to: new Date(y, mo - 1, d, e.endhour, e.endminute + 1),
+      created: cd ? new Date(c3, c2 - 1, c1, h, m) : null };
+  }).find((e) => e.from <= now && now < e.to && (!checked || (e.created && e.created > checked)));
+  if (tg?.active) return { type: tg.type || "ГАВ", queues: tg.queues, since: tg.since ? new Date(tg.since) : null, link: tg.link, asOf: stale ? checked : null };
+  if (poeNew) return { type: poeNew.type, queues: null, since: poeNew.created || poeNew.from, link: "https://t.me/poltavaOE", asOf: null, fromPoe: true };
+  return null;
+}
+
 function renderAlert() {
-  const e = POE.emergencyNow(unloading, status?.emergency), on = !!e;
+  const e = currentEmergency(), on = !!e;
   $("alert").classList.toggle("show", on);
   $("barwrap").classList.toggle("alerted", on);
   if (!on) return;
-  $("alertTitle").textContent = (e.type === "СГАВ" ? "Діють СГАВ" : "Діють ГАВ") + (e.from ? ` з ${hm(e.from)}` : "");
+  const qs = e.queues && e.queues.length ? GAV.rangeText(e.queues) : "";
+  $("alertTitle").textContent = `Діють ${e.type}` + (qs ? ` · ${qs}` : "");
+  $("alertSub").textContent = e.asOf ? `станом на ${hm(e.asOf)} · перевірте в Telegram`
+    : e.since ? `з ${hm(e.since)} · ГПВ може не діяти` : "графік може не діяти";
   $("alertTime").textContent = "Деталі ›";
   $("alert").href = e.link || "https://t.me/poltavaOE";
-  $("alert").title = e.text || "";
 }
 
 /* ---------- графік на дні ---------- */

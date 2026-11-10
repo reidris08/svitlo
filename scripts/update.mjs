@@ -12,6 +12,7 @@
 import { readFile, writeFile, mkdir } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
 import path from "node:path";
+import "../gav.js";   // globalThis.GAV — спільний розбір ГАВ для застосунку, віджета і GitHub
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const DATA_DIR = path.join(ROOT, "data");
@@ -141,7 +142,13 @@ async function main() {
   try {
     const posts = parseTelegram(await getText(TELEGRAM_URL));
     if (!posts.length) throw new Error("не знайдено дописів");
-    const status = { checkedAt, emergency: detectEmergency(posts) };
+    const g = globalThis.GAV.gavState(posts);
+    const status = { checkedAt, emergency: {
+      active: g.active, type: g.type, queues: g.queues, since: g.since,
+      text: g.last ? g.last.text.slice(0, 400) : null,
+      postedAt: g.last ? g.last.time : null, link: g.last ? g.last.link : "https://t.me/poltavaOE",
+      lastKind: g.last ? g.last.kind : null,
+    } };
     console.log("status:", (await writeIfChanged("status.json", status, "checkedAt")) ? "оновлено" : "без змін",
       JSON.stringify(status.emergency).slice(0, 160));
   } catch (e) {
