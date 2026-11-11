@@ -167,8 +167,11 @@ const GAV = (function () {
 
   // posts: [{time: ISO, text, link}], будь-який порядок
   function gavState(posts, now = new Date()) {
+    // ГАВ оголошують на добу (до 23:59), тому рахуємо лише сьогоднішні дописи (за київським часом)
+    const dayKey = (d) => new Intl.DateTimeFormat("en-CA", { timeZone: "Europe/Kyiv", year: "numeric", month: "2-digit", day: "2-digit" }).format(new Date(d));
+    const today = dayKey(now);
     const recent = (posts || [])
-      .filter((p) => now - new Date(p.time) < 24 * 3600e3 && new Date(p.time) <= now)
+      .filter((p) => dayKey(p.time) === today && new Date(p.time) <= now)
       .sort((a, b) => new Date(a.time) - new Date(b.time));
     let active = new Set(), type = null, since = null, last = null;
     for (const p of recent) {
@@ -293,6 +296,13 @@ async function build() {
   let em;
   if (tgPosts) { const g = GAV.gavState(tgPosts); em = g.active ? { active: true, type: g.type, queues: g.queues } : null; }
   else em = emergencyNow(unloading, status && status.emergency);
+  // офіційний перелік ГАВ на сайті обленерго: якщо на зараз запису немає — ГАВ не діють
+  if (em && Array.isArray(unloading)) {
+    const nowD = new Date();
+    const has = unloading.some((e) => /С?ГАВ/.test(e.unloadingtypename || "") &&
+      toDateDMY(e.unloaddata, e.beginhour, e.beginminute) <= nowD && nowD < new Date(+toDateDMY(e.unloaddata, e.endhour, e.endminute) + 60000));
+    if (!has) em = null;
+  }
   const now = new Date();
   const segs = segments(schedule, queue);
   const i = segs.findIndex((s) => s.start <= now && now < s.end);

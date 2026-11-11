@@ -290,9 +290,9 @@
   </form>
 </dialog>
 
-<script src="poe.js?v=11"></script>
-<script src="gav.js?v=11"></script>
-<script src="search.js?v=11"></script>
+<script src="poe.js?v=12"></script>
+<script src="gav.js?v=12"></script>
+<script src="search.js?v=12"></script>
 <script>
 "use strict";
 const QUEUES = ["1.1","1.2","2.1","2.2","3.1","3.2","4.1","4.2","5.1","5.2","6.1","6.2"];
@@ -437,7 +437,16 @@ function currentEmergency() {
       from: new Date(y, mo - 1, d, e.beginhour, e.beginminute), to: new Date(y, mo - 1, d, e.endhour, e.endminute + 1),
       created: cd ? new Date(c3, c2 - 1, c1, h, m) : null };
   }).find((e) => e.from <= now && now < e.to && (!checked || (e.created && e.created > checked)));
-  if (tg?.active) return { type: tg.type || "ГАВ", queues: tg.queues, since: tg.since ? new Date(tg.since) : null, link: tg.link, asOf: stale ? checked : null };
+  // сайт обленерго — офіційний перелік ГАВ на добу: немає запису на зараз → ГАВ не діють
+  const poeHasNow = Array.isArray(unloading) && unloading.some((e) => {
+    if (!/С?ГАВ/.test(e.unloadingtypename || "")) return false;
+    const [d, mo, y] = e.unloaddata.split("-").map(Number);
+    return new Date(y, mo - 1, d, e.beginhour, e.beginminute) <= now && now < new Date(y, mo - 1, d, e.endhour, e.endminute + 1);
+  });
+  if (Array.isArray(unloading) && !poeHasNow) return null;
+  // стан із Telegram рахується за сьогоднішню добу
+  const tgToday = tg?.active && checked && new Date(checked).toDateString() === now.toDateString();
+  if (tgToday) return { type: tg.type || "ГАВ", queues: tg.queues, since: tg.since ? new Date(tg.since) : null, link: tg.link, asOf: stale ? checked : null };
   if (poeNew) return { type: poeNew.type, queues: null, since: poeNew.created || poeNew.from, link: "https://t.me/poltavaOE", asOf: null, fromPoe: true };
   return null;
 }

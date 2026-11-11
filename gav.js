@@ -41,8 +41,11 @@
 
   // posts: [{time: ISO, text, link}], будь-який порядок
   function gavState(posts, now = new Date()) {
+    // ГАВ оголошують на добу (до 23:59), тому рахуємо лише сьогоднішні дописи (за київським часом)
+    const dayKey = (d) => new Intl.DateTimeFormat("en-CA", { timeZone: "Europe/Kyiv", year: "numeric", month: "2-digit", day: "2-digit" }).format(new Date(d));
+    const today = dayKey(now);
     const recent = (posts || [])
-      .filter((p) => now - new Date(p.time) < 24 * 3600e3 && new Date(p.time) <= now)
+      .filter((p) => dayKey(p.time) === today && new Date(p.time) <= now)
       .sort((a, b) => new Date(a.time) - new Date(b.time));
     let active = new Set(), type = null, since = null, last = null;
     for (const p of recent) {
