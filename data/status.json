@@ -1,19 +1,13 @@
 {
- "checkedAt": "2026-11-11T07:16:24.245Z",
+ "checkedAt": "2026-11-11T08:50:49.303Z",
  "emergency": {
-  "active": true,
-  "type": "ГАВ",
-  "queues": [
-   1,
-   2,
-   3,
-   4,
-   5
-  ],
-  "since": "2026-11-10T10:24:00.000Z",
-  "text": "ГАВ скасовано!\n\nО 21:00 скасовано 5 черг ГАВ (6-10 черги).",
-  "postedAt": "2026-11-10T19:00:00.000Z",
-  "link": "https://t.me/poltavaOE/4526",
-  "lastKind": "cancel"
+  "active": false,
+  "type": null,
+  "queues": [],
+  "since": null,
+  "text": null,
+  "postedAt": null,
+  "link": "https://t.me/poltavaOE",
+  "lastKind": null
  }
 }
