@@ -322,13 +322,35 @@ async function build() {
   const what = cur.v === "off" ? "до ввімкнення" : cur.v === "on" ? "до вимкнення" : (next && next.v === "on" ? "до ввімкнення" : "до вимкнення");
 
   if (lock) {
-    const top = w.addText(`${LABEL[cur.v]}${lastOn ? "" : " · " + hm(cur.end)}`);
-    top.font = Font.semiboldSystemFont(12);
-    if (em) { const a = w.addText(`⚠︎ ${em.type}`); a.font = Font.boldSystemFont(11); }
-    if (!lastOn) { const d = w.addDate(cur.end); d.applyTimerStyle(); d.font = Font.boldRoundedSystemFont(20); }
-    else { const d = w.addText("без відключень"); d.font = Font.boldRoundedSystemFont(16); }
-    w.addSpacer(3);
-    w.addImage(barImage(150, cur, now, null, true)).imageSize = new Size(150, 8);
+    // Прямокутний віджет екрана блокування: точна ширина під модель iPhone,
+    // усе вирівняно ліворуч, щоб iOS нічого не обрізала
+    const sw0 = Math.min(Device.screenSize().width, Device.screenSize().height);
+    const LW = sw0 >= 428 ? 172 : sw0 >= 414 ? 170 : sw0 >= 390 ? 158 : sw0 >= 375 ? 155 : 140;
+    const innerW = LW - 6;
+    w.setPadding(0, 2, 0, 2);
+    const box = w.addStack(); box.layoutVertically(); box.size = new Size(innerW, 0);
+
+    const r1 = box.addStack(); r1.size = new Size(innerW, 0); r1.centerAlignContent();
+    const SYM = { on: "lightbulb.fill", off: "bolt.slash.fill", maybe: "arrow.triangle.2.circlepath" };
+    const sy = SFSymbol.named(SYM[cur.v]) || SFSymbol.named("bolt.fill"); sy.applySemiboldWeight();
+    const ic = r1.addImage(sy.image); ic.imageSize = new Size(11, 11); ic.tintColor = Color.white();
+    r1.addSpacer(4);
+    const top = r1.addText(`${LABEL[cur.v]}${lastOn ? "" : " · до " + hm(cur.end)}`);
+    top.font = Font.semiboldSystemFont(12); top.lineLimit = 1; top.minimumScaleFactor = 0.75;
+    r1.addSpacer();
+
+    const r2 = box.addStack(); r2.size = new Size(innerW, 0); r2.centerAlignContent();
+    if (!lastOn) {
+      const d = r2.addDate(cur.end); d.applyTimerStyle(); d.leftAlignText();
+      d.font = Font.boldRoundedSystemFont(22); d.lineLimit = 1; d.minimumScaleFactor = 0.7;
+    } else {
+      const d = r2.addText("без відключень"); d.font = Font.boldRoundedSystemFont(16); d.lineLimit = 1; d.minimumScaleFactor = 0.7;
+    }
+    r2.addSpacer();
+    if (em) { const a = r2.addText(`⚠︎ ${em.type}`); a.font = Font.boldSystemFont(12); a.lineLimit = 1; }
+
+    box.addSpacer(3);
+    const bi = box.addImage(barImage(innerW, cur, now, null, true)); bi.imageSize = new Size(innerW, 8);
     return w;
   }
 
