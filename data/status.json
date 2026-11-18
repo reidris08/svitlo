@@ -1,13 +1,13 @@
 {
- "checkedAt": "2026-11-17T19:26:03.807Z",
+ "checkedAt": "2026-11-18T01:47:43.318Z",
  "emergency": {
   "active": false,
   "type": null,
   "queues": [],
   "since": null,
-  "text": "ГАВ скасовано!\n\nО 12:17 скасовано ГАВ в повному обсязі.",
-  "postedAt": "2026-11-17T10:17:00.000Z",
-  "link": "https://t.me/poltavaOE/4570",
-  "lastKind": "cancel"
+  "text": null,
+  "postedAt": null,
+  "link": "https://t.me/poltavaOE",
+  "lastKind": null
  }
 }
