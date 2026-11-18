@@ -1,24 +1,13 @@
 {
- "checkedAt": "2026-11-18T09:16:01.457Z",
+ "checkedAt": "2026-11-18T18:12:01.501Z",
  "emergency": {
-  "active": true,
-  "type": "ГАВ",
-  "queues": [
-   1,
-   2,
-   3,
-   4,
-   5,
-   6,
-   7,
-   8,
-   9,
-   10
-  ],
-  "since": "2026-11-18T06:05:00.000Z",
-  "text": "В області застосовано ГАВ!\n\nО 8:05 отримана команда НЕК “Укренерго” ввести ГАВ (1-10 черга).",
-  "postedAt": "2026-11-18T06:05:00.000Z",
-  "link": "https://t.me/poltavaOE/4573",
-  "lastKind": "intro"
+  "active": false,
+  "type": null,
+  "queues": [],
+  "since": null,
+  "text": "ГАВ скасовано!\nО 11:55 скасовано ГАВ в повному обсязі.",
+  "postedAt": "2026-11-18T09:55:00.000Z",
+  "link": "https://t.me/poltavaOE/4579",
+  "lastKind": "cancel"
  }
 }
